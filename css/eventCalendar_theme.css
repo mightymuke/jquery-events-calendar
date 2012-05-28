@@ -1,0 +1,119 @@
+ /* Theme CSS */
+ 
+ body {
+	font-family: Arial, "Lucida Grande", sans-serif; 
+	font-size: 13px; 
+	line-height: 18px; 
+	color: #555; 
+	background-color:#fff;
+ }
+.eventCalendar-wrap {
+	width:300px;
+	border:solid 1px #ccc;
+	box-shadow:0 0 2px #ccc;
+	border-radius:5px;
+	margin-bottom:20px;
+}
+	.eventCalendar-wrap .arrow {
+		background:rgba(150,150,150,0.5);
+		
+		border-radius:5px;
+		text-decoration:none;
+		color:#fff;
+		padding:0 5px;
+		line-height:23px;
+	}
+		.eventCalendar-wrap .arrow:hover { opacity:0.7;}
+	.eventsCalendar-slider { height:80px;}
+	
+	.eventsCalendar-monthWrap {
+		background-color:#fff;
+		border-radius:5px;
+	}
+		.eventsCalendar-currentTitle {
+			line-height:30px;
+		}
+			.eventsCalendar-currentTitle .monthTitle {
+				font-size:120%;
+				text-decoration:none;
+				font-weight:Bold;
+			}
+		.eventsCalendar-daysList {
+			margin:0; padding:0;
+		}
+			.eventsCalendar-daysList li a {
+				text-decoration:none;
+			}
+			.eventsCalendar-daysList li.dayWithEvents {
+				background:rgba(0,255,0,0.5);
+			} 
+			.eventsCalendar-daysList li.current {
+				background:rgba(255,0,0,0.5);
+			} 
+		.eventsCalendar-loading {
+			border-radius:4px;
+			margin:5px auto;
+			padding:0 10px;
+			background-color:#ccc;
+			color:#fff;
+			text-align:center;
+			font-weight:bold;
+			box-shadow:0 0 10px #ccc;
+			text-shadow:0 0 3px #aaa;
+			position:absolute;
+			z-index:4;
+			top:5px;
+			left:5px;
+		}	
+			.eventsCalendar-loading.error {
+				background-color:red;
+			}
+#eventsCalendar-list-wrap {
+	min-height:320px;
+	position:relative;
+}
+	.eventsCalendar-list {
+		margin:0; padding:0; list-style-type:none;
+	}
+	.eventsCalendar-list li {
+		padding:0 5px 10px;
+		margin:0;
+	}
+		.eventsCalendar-list li em {
+			float:left;
+			font-style:normal;
+		}
+		.eventsCalendar-list li time {
+			
+			float:left;
+			background-color:#ccc;
+			padding:0 3px;
+			margin-left:3px;
+			
+		}
+		.eventsCalendar-list li strong {
+			float:left;
+			clear:both;
+		}
+		.eventsCalendar-list li p {
+			display:block;
+			clear: both;
+			margin:0;
+			font-size:80%;
+			line-height:1.2em;
+		}
+		.eventsCalendar-list .eventsCalendar-noEvents {
+			font-size:120%;
+			border-radius:4px;
+			margin:5px;
+			padding:5px;
+			
+			background-color:#ccc;
+			color:#fff;
+			text-align:center;
+			font-weight:bold;
+			box-shadow:0 0 10px #ccc;
+			text-shadow:0 0 3px #aaa;
+		}
+	
+/* end of theme css */	
