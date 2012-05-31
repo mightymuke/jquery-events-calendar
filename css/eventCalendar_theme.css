@@ -1,12 +1,13 @@
  /* Theme CSS */
- 
+ html {
+	background-color:#eee;
+ }
  body {
 	font-family: Arial, "Lucida Grande", sans-serif; 
 	font-size: 13px; 
 	line-height: 18px; 
 	color: #555; 
-	background-color:#eee;
-	
+	background-color:#fff;
  }
 .eventCalendar-wrap {
 	width:300px;
@@ -165,7 +166,7 @@
 			text-shadow:0 0 3px #aaa;
 			position:absolute;
 			z-index:4;
-			top:5px;
+			top:25px;
 			left:5px;
 		}	
 			.eventsCalendar-loading.error {
@@ -175,6 +176,12 @@
 	min-height:100px;
 	position:relative;
 }
+	.eventsCalendar-list-content.scrollable {
+		
+		height:100px;
+		overflow-y:auto;
+		margin:0 5px 5px 0;
+	}
 	.eventsCalendar-list {
 		margin:0; padding:0; list-style-type:none;
 	}
@@ -274,20 +281,70 @@
 
 
 /*= ONLY FOR DEMO PAGE */
-body { width:978px; box-shadow:0 0 20px #000; padding: 20px; margin:0 auto;}
+body { 
+	width:978px; 
+	box-shadow:0 0 10px #777; 
+	padding: 20px 40px; 
+	margin:0 auto;
+}
+a { color: #0E8EAB}
 .eventCalendar-wrap {
 	width:265px;
 }
 #DemoList { list-style-type:none; padding:0;}
 #DemoList > li { margin-right:50px; float:left;}
 #DemoList > li > h2 { margin:20px 0 3px 0;}
-#DemoList > li > p { width:200px; margin:0 0 10px 0;}
+.demoDesc { width:200px; margin:0 0 10px 0;}
 .fl { float:left;}
 .cb { clear:both;}
 
-#eventCalendarDefault { width:195px;}
+.thin .eventCalendar-wrap { width:195px;}
+	.thin pre { width:185px;}
+	.thin .demoDesc { width:195px;}
 	
-#eventCalendarNoCache { width:650px; }
+.wide  .eventCalendar-wrap { width:650px; }
+	.wide pre { width:640px;}
+	.wide .demoDesc { width:650px;}
 
+#paradigmaBox {
+	float:left;
+}
+#vissitBox {
+	float:right;
+}
+	.poweredBy img {
+		float:left;
+		margin-right:3px;
+	}
 
+	.poweredBy .data {
+		float:left;
+	}	
+	.poweredBy .name {
+		font-weight:bold;
+		color:#555;
+		text-decoration:none;
+		display:block;
+		margin-top:28px;
+	}
+	.poweredBy .twitter {
+		text-decoration:none;
+		display:block;
+		float:left;
+	}
+.features {
+	padding-left:20px;
+	float:left;
+}	
+#appLogo {
+	margin-right:30px;
+}
+pre {
+	clear:both;
+	width:255px;
+	background-color:#FFFFCC;
+	padding:5px;
+	border:solid 1px #FED17E;
+	overflow:auto;
+}
 /* end of demo page */

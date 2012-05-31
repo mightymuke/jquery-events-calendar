@@ -24,7 +24,11 @@ $.fn.eventCalendar = function(options){
 	this.each(function(){
 		
 		flags.wrap = $(this);
-		flags.wrap.addClass('eventCalendar-wrap').append("<div id='eventsCalendar-list-wrap'><p class='eventsCalendar-subtitle'></p><span class='eventsCalendar-loading'>loading...</span><ul class='eventsCalendar-list'></ul></div>");
+		flags.wrap.addClass('eventCalendar-wrap').append("<div id='eventsCalendar-list-wrap'><p class='eventsCalendar-subtitle'></p><span class='eventsCalendar-loading'>loading...</span><div class='eventsCalendar-list-content'><ul class='eventsCalendar-list'></ul></div></div>");
+		
+		if (eventsOpts.eventsScrollable) {
+			flags.wrap.find('.eventsCalendar-list-content').addClass('scrollable');
+		}
 		
 		flags.directionLeftMove = flags.wrap.width();
 		
@@ -51,6 +55,22 @@ $.fn.eventCalendar = function(options){
 				
 			getEvents(eventsOpts.eventsLimit, year, month,false, "month");
 		})
+	});
+	
+	// show event description
+	flags.wrap.find('.eventsCalendar-list .eventTitle').live('click',function(e){
+		if(!eventsOpts.showDescription) {
+			e.preventDefault();
+			var desc = $(this).parent().find('.eventDesc');
+			
+			if (!desc.find('a').size()) {
+				var eventUrl = $(this).attr('href');
+				// create a button to go to event url
+				desc.append('<a href="' + eventUrl + '" class="bt">ir al evento</a>')
+			} 
+			
+			desc.slideToggle();
+		}
 	});
 	
 	function sortJson(a, b){  
@@ -318,23 +338,6 @@ $.fn.eventCalendar = function(options){
 	}
 	
 	
-		// show event description
-	$('.eventsCalendar-list .eventTitle').live('click',function(e){
-		if(!eventsOpts.showDescription) {
-			e.preventDefault();
-			var desc = $(this).parent().find('.eventDesc');
-			
-			if (!desc.find('a').size()) {
-				var eventUrl = $(this).attr('href');
-				// create a button to go to event url
-				desc.append('<a href="' + eventUrl + '" class="bt">ir al evento</a>')
-			} 
-			
-			desc.slideToggle();
-		}
-	});
-	
-	
 	function changeMonth() {
 		flags.wrap.find('.arrow').click(function(e){
 			e.preventDefault();
@@ -382,6 +385,7 @@ $.fn.eventCalendar.defaults = {
 	startWeekOnMonday: true,
 	showDayNameInCalendar: true,
 	showDescription: false,
+	eventsScrollable: false,
 	moveSpeed: 500,	// speed of month move when you clic on a new date
 	moveOpacity: 0.15, // month and events fadeOut to this opacity
 	jsonData: "", 	// to load and inline json (not ajax calls) 
