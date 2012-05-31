@@ -1,30 +1,22 @@
-/* =
-	jquery.eventCalendar.js
-	version: 0.3;
-	date: 28-05-2012
-	authors: 
-		Jaime Fernandez (@vissit)
-		Nerea Navarro (@nereaestonta)
-	company:	
-		Paradigma Tecnologico (@paradigmate)
-*/
-
+// definición de la función
 $.fn.eventCalendar = function(options){
- 
-	var eventsOpts = $.extend({}, $.fn.eventCalendar.defaults, options);
+	// puede recibir un array de parámetros nombrados
+	// invocamos a una función genérica que hace el merge 
+	// entre los recibidos y los de por defecto 
+	eventsOpts = $.extend({}, $.fn.eventCalendar.defaults, options);
 	
-	// define global vars for the function
 	var flags = {
+		downloaded: false,
 		wrap: "",
 		directionLeftMove: "300",
 		eventsJson: {}
 	}
 	
-	// each eventCalendar will execute this function
+	// para cada componente que puede contener el objeto jQuery que invoca a esta función
 	this.each(function(){
-		
 		flags.wrap = $(this);
-		flags.wrap.addClass('eventCalendar-wrap').append("<div id='eventsCalendar-list-wrap'><p class='eventsCalendar-subtitle'></p><span class='eventsCalendar-loading'>loading...</span><ul class='eventsCalendar-list'></ul></div>");
+		flags.wrap.addClass('eventCalendar-wrap')
+				.append("<div id='eventsCalendar-list-wrap'><p class='eventsCalendar-subtitle'></p><span class='eventsCalendar-loading'>loading...</span><ul class='eventsCalendar-list'></ul></div>");
 		
 		flags.directionLeftMove = flags.wrap.width();
 		
@@ -35,7 +27,7 @@ $.fn.eventCalendar = function(options){
 		
 		changeMonth();
 		
-		flags.wrap.find('.eventsCalendar-day a').live('click',function(e){
+		$('.eventsCalendar-day a').live('click',function(e){
 			e.preventDefault();
 			var year = flags.wrap.attr('data-current-year'),
 				month = flags.wrap.attr('data-current-month'),
@@ -44,12 +36,12 @@ $.fn.eventCalendar = function(options){
 			getEvents(false, year, month,day, "day");
 		});
 		
-		flags.wrap.find('.monthTitle').live('click',function(e){
+		$('.monthTitle').live('click',function(e){
 			e.preventDefault();
 			var year = flags.wrap.attr('data-current-year'),
 				month = flags.wrap.attr('data-current-month');
 				
-			getEvents(eventsOpts.eventsLimit, year, month,false, "month");
+			getEvents(false, year, month,false, "month");
 		})
 	});
 	
@@ -58,11 +50,10 @@ $.fn.eventCalendar = function(options){
 	};
 
 	function dateSlider(show, year, month) {
-		console.log(eventsOpts.txt_prev);
 		var $eventsCalendarSlider = $("<div class='eventsCalendar-slider'></div>"),
 			$eventsCalendarMonthWrap = $("<div class='eventsCalendar-monthWrap' style='width:"+flags.wrap.width()+"px'></div>"),
 			$eventsCalendarTitle = $("<div class='eventsCalendar-currentTitle'><a href='#' class='monthTitle'></a></div>"),
-			$eventsCalendarArrows = $("<a href='#' class='arrow prev'><span>" + eventsOpts.txt_prev + "</span></a><a href='#' class='arrow next'><span>" + eventsOpts.txt_next + "</span></a>");
+			$eventsCalendarArrows = $("<a href='#' class='arrow prev'>" + eventsOpts.txt_prev + "</a><a href='#' class='arrow next'>" + eventsOpts.txt_next + "</a>");
 			$eventsCalendarDaysList = $("<ul class='eventsCalendar-daysList'></ul>"),
 			date = new Date();
 		
@@ -106,10 +97,11 @@ $.fn.eventCalendar = function(options){
 			monthToShow = month + 1;
 		
 		if (show != "current") {
-			// month change
-			getEvents(eventsOpts.eventsLimit, year, month,false, show);
+			getEvents(false, year, month,false, show);
 		}
-				
+		
+		//console.log("dateSlider:  " + year + "/" + monthToShow + "/" + day);
+		
 		flags.wrap.attr('data-current-month',month)
 			.attr('data-current-year',year);
 			
@@ -121,32 +113,13 @@ $.fn.eventCalendar = function(options){
 		var daysList = [];
 		if (eventsOpts.showDayAsWeeks) {
 			$eventsCalendarDaysList.addClass('showAsWeek');
-			
-			// show day name in top of calendar
-			if (eventsOpts.showDayNameInCalendar) {
-				$eventsCalendarDaysList.addClass('showDayNames');
-				
-				// if week start on monday
-				var i = 0;
-				if (eventsOpts.startWeekOnMonday) {
-					i = 1;
-				}
-				for (; i < 7; i++) {
-					daysList.push('<li class="eventsCalendar-day-header">'+eventsOpts.dayNamesShort[i]+'</li>');
-					
-					if (i === 6 && eventsOpts.startWeekOnMonday) {
-						daysList.push('<li class="eventsCalendar-day-header">'+eventsOpts.dayNamesShort[0]+'</li>');
-					}
-					
-				}
-			}
-			
 			dt=new Date(year, month, 01);
 			var weekDay = dt.getDay();
 			if (eventsOpts.startWeekOnMonday) {
 				weekDay = dt.getDay() - 1;
 			}
 			for (i = weekDay; i > 0; i--) {
+				//console.log(i + " " + date.getDay());
 				daysList.push('<li class="eventsCalendar-day empty"></li>');
 			}
 		}
@@ -184,28 +157,14 @@ $.fn.eventCalendar = function(options){
 	function getEvents(limit, year, month, day, direction) {
 		var limit = limit || 0;
 		var year = year || '';
+		var month = month || '';
 		var day = day || '';
 		
-		// to avoid problem with january (month = 0)
-		
-		if (typeof month != 'undefined') {
-			var month = month;
-		} else {
-			var month = '';
-		}
-		
-		//var month = month || '';
 		flags.wrap.find('.eventsCalendar-loading').fadeIn();
 		
-		if (eventsOpts.jsonData) {
-			// user send a json in the plugin params
-			eventsOpts.cacheJson = true;
-			
-			flags.eventsJson = eventsOpts.jsonData;
-			getEventsData(flags.eventsJson, limit, year, month, day, direction);
-			
-		} else if (!eventsOpts.cacheJson || !direction) {
+		if (!eventsOpts.cacheJson || !direction) {
 			// first load: load json and save it to future filters
+			flags.downloaded = true;
 			$.getJSON(eventsOpts.eventsjson + "?limit="+limit+"&year="+year+"&month="+month+"&day="+day, function(data) {
 				flags.eventsJson = data; // save data to future filters
 				getEventsData(flags.eventsJson, limit, year, month, day, direction);
@@ -222,7 +181,7 @@ $.fn.eventCalendar = function(options){
 		directionLeftMove = "-=" + flags.directionLeftMove;
 		eventContentHeight = "auto";
 		
-		subtitle = flags.wrap.find('#eventsCalendar-list-wrap .eventsCalendar-subtitle')
+		subtitle = $('#eventsCalendar-list-wrap .eventsCalendar-subtitle')
 		if (!direction) {
 			// first load
 			subtitle.html(eventsOpts.txt_NextEvents);
@@ -257,13 +216,6 @@ $.fn.eventCalendar = function(options){
 
 			// each event
 			if (data.length) {
-			
-				// show or hide event description
-				var eventDescClass = '';
-				if(!eventsOpts.showDescription) {
-					eventDescClass = 'hidden';
-				}
-			
 				var i = 0;
 				$.each(data, function(key, event) {
 					var eventDate = new Date(parseInt(event.date)),
@@ -278,17 +230,10 @@ $.fn.eventCalendar = function(options){
 								eventMinute = "0" + eventMinute;
 							}
 						// if month or day exist then only show matched events
-						if ((month === false || month == eventMonth) 
-								&& (day == '' || day == eventDay)
-							) {
-								// if initial load then load only future events
-								if (month === false && eventDate < new Date()) {
-								
-								} else {
-									eventStringDate = eventDay + "/" + eventMonthToShow + "/" + eventYear;
-									events.push('<li id="' + key + '"><time datetime="'+eventDate+'"><em>' + eventStringDate + '</em><small>'+eventHour+":"+eventMinute+'</small></time><a href="'+event.url+'" class="eventTitle">' + event.title + '</a><p class="eventDesc ' + eventDescClass + '">' + event.description + '</p></li>');
-									i++;
-								}
+						if ((month == '' || month == eventMonth) && (day == '' || day == eventDay)) {
+							eventStringDate = eventDay + "/" + eventMonthToShow + "/" + eventYear;
+							events.push('<li id="' + key + '"><em>' + eventStringDate + '</em><time>'+eventHour+":"+eventMinute+'</time><strong>' + event.title + '</strong><p>' + event.description + '</p></li>');
+							i++;
 						}
 					}
 					
@@ -317,26 +262,8 @@ $.fn.eventCalendar = function(options){
 		});
 	}
 	
-	
-		// show event description
-	$('.eventsCalendar-list .eventTitle').live('click',function(e){
-		if(!eventsOpts.showDescription) {
-			e.preventDefault();
-			var desc = $(this).parent().find('.eventDesc');
-			
-			if (!desc.find('a').size()) {
-				var eventUrl = $(this).attr('href');
-				// create a button to go to event url
-				desc.append('<a href="' + eventUrl + '" class="bt">ir al evento</a>')
-			} 
-			
-			desc.slideToggle();
-		}
-	});
-	
-	
 	function changeMonth() {
-		flags.wrap.find('.arrow').click(function(e){
+		$('.eventCalendar-wrap .arrow').click(function(e){
 			e.preventDefault();
 
 			if ($(this).hasClass('next')) {
@@ -358,21 +285,21 @@ $.fn.eventCalendar = function(options){
 	}
 
 	function showError(msg) {
-		flags.wrap.find('#eventsCalendar-list-wrap').html("<span class='eventsCalendar-loading error'>"+msg+" " +eventsOpts.eventsjson+"</span>");
+		$('#eventsCalendar-list-wrap').html("<span class='eventsCalendar-loading error'>"+msg+" " +eventsOpts.eventsjson+"</span>");
 	}
 };
 
 
-// define the parameters with the default values of the function
+// definimos los parámetros junto con los valores por defecto de la función
 $.fn.eventCalendar.defaults = {
+    // para el fondo un color por defecto
     eventsjson: 'js/events.json',
-	eventsLimit: 6,
+	eventsLimit: 5,
 	monthNames: [ "January", "February", "March", "April", "May", "June",
 		"July", "August", "September", "October", "November", "December" ],
 	dayNames: [ 'Sunday','Monday','Tuesday','Wednesday',
 		'Thursday','Friday','Saturday' ],
-	dayNamesShort: [ 'Sun','Mon','Tue','Wed', 'Thu','Fri','Sat' ],		
-	txt_noEvents: "There are no events in this period",
+	txt_noEvents: "There is no events in this period",
 	txt_SpecificEvents_prev: "",
 	txt_SpecificEvents_after: "events:",
 	txt_next: "next",
@@ -380,11 +307,8 @@ $.fn.eventCalendar.defaults = {
 	txt_NextEvents: "Next events:",
 	showDayAsWeeks: true,
 	startWeekOnMonday: true,
-	showDayNameInCalendar: true,
-	showDescription: false,
 	moveSpeed: 500,	// speed of month move when you clic on a new date
 	moveOpacity: 0.15, // month and events fadeOut to this opacity
-	jsonData: "", 	// to load and inline json (not ajax calls) 
 	cacheJson: true	// if true plugin get a json only first time and after plugin filter events
 					// if false plugin get a new json on each date change
 };

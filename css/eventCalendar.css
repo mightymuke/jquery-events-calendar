@@ -1,4 +1,6 @@
 /*= CORE CSS */
+.hidden { display:none; }
+
 .eventCalendar-wrap { 
 	position:relative; 
 	overflow:hidden;
