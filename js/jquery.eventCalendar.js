@@ -65,11 +65,21 @@ $.fn.eventCalendar = function(options){
 			
 			if (!desc.find('a').size()) {
 				var eventUrl = $(this).attr('href');
+				var eventTarget = $(this).attr('target');
+				
 				// create a button to go to event url
-				desc.append('<a href="' + eventUrl + '" class="bt">ir al evento</a>')
+				desc.append('<a href="' + eventUrl + '" target="'+eventTarget+'" class="bt">ir al evento</a>')
 			} 
 			
-			desc.slideToggle();
+			if (desc.is(':visible')) {
+				desc.slideUp();
+			} else {
+				if(eventsOpts.onlyOneDescription) {
+					flags.wrap.find('.eventDesc').slideUp();
+				}
+				desc.slideDown();
+			}
+			
 		}
 	});
 	
@@ -283,6 +293,10 @@ $.fn.eventCalendar = function(options){
 				if(!eventsOpts.showDescription) {
 					eventDescClass = 'hidden';
 				}
+				var eventLinkTarget = "_self";
+				if(eventsOpts.openEventInNewWindow) {
+					eventLinkTarget = '_target';
+				}
 			
 				var i = 0;
 				$.each(data, function(key, event) {
@@ -306,7 +320,7 @@ $.fn.eventCalendar = function(options){
 								
 								} else {
 									eventStringDate = eventDay + "/" + eventMonthToShow + "/" + eventYear;
-									events.push('<li id="' + key + '"><time datetime="'+eventDate+'"><em>' + eventStringDate + '</em><small>'+eventHour+":"+eventMinute+'</small></time><a href="'+event.url+'" class="eventTitle">' + event.title + '</a><p class="eventDesc ' + eventDescClass + '">' + event.description + '</p></li>');
+									events.push('<li id="' + key + '"><time datetime="'+eventDate+'"><em>' + eventStringDate + '</em><small>'+eventHour+":"+eventMinute+'</small></time><a href="'+event.url+'" target="' + eventLinkTarget + '" class="eventTitle">' + event.title + '</a><p class="eventDesc ' + eventDescClass + '">' + event.description + '</p></li>');
 									i++;
 								}
 						}
@@ -369,7 +383,7 @@ $.fn.eventCalendar = function(options){
 // define the parameters with the default values of the function
 $.fn.eventCalendar.defaults = {
     eventsjson: 'js/events.json',
-	eventsLimit: 6,
+	eventsLimit: 4,
 	monthNames: [ "January", "February", "March", "April", "May", "June",
 		"July", "August", "September", "October", "November", "December" ],
 	dayNames: [ 'Sunday','Monday','Tuesday','Wednesday',
@@ -385,6 +399,8 @@ $.fn.eventCalendar.defaults = {
 	startWeekOnMonday: true,
 	showDayNameInCalendar: true,
 	showDescription: false,
+	onlyOneDescription: true,
+	openEventInNewWindow: false,
 	eventsScrollable: false,
 	moveSpeed: 500,	// speed of month move when you clic on a new date
 	moveOpacity: 0.15, // month and events fadeOut to this opacity

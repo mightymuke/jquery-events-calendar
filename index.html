@@ -53,7 +53,7 @@
 	</ul>
 	
 	<ul id="DemoList" class="cb">
-		<li class="fl thin">
+		<li class="fl">
 			<h2>Default Demo</h2>
 			<p class="demoDesc">Example of jQuery Events Calendar with default parameters</p>
 			<div id="eventCalendarDefault"></div>
@@ -70,7 +70,7 @@
 				});  
 			</script> 
 		</li>
-		<li class="fl wide">
+		<li class="fl">
 			<h2>No cache</h2>
 			<p class="demoDesc">The plugin only calls once to the json file, so it has to contain all events. After that call, the plugin will filter the results</p>
 			<div id="eventCalendarNoCache"></div>
@@ -87,7 +87,7 @@
   cacheJson: false
 }); </pre>			
 		</li>
-		<li class="fl cb">
+		<li class="fl">
 			<h2>inline json</h2>
 			<p class="demoDesc">The json is written directly inside the plugin function via javaScript (no ajax call to get the events).</p>
 			<div id="eventCalendarInline"></div>
@@ -105,7 +105,7 @@ $(id).eventCalendar({
   jsonData: eventsInline
 }); </pre>				
 		</li>
-		<li class="fl">
+		<li class="fl cb">
 			<h2>Localization</h2>
 			<p class="demoDesc">We have total control about the language of the plugin</p>
 			<div id="eventCalendarLocale"></div>
@@ -159,23 +159,6 @@ $(id).eventCalendar({
   eventsLimit: 2
 }); </pre>				
 		</li>
-		<li class="fl cb">
-			<h2>Calendar display</h2>
-			<p class="demoDesc">You can show all the days in a single line to make calendar widget smaller</p>
-			<div id="eventCalendarCalendarLine"></div>
-			<script>  
-				$(document).ready(function() {  
-					$("#eventCalendarCalendarLine").eventCalendar({
-						eventsjson: 'events.json.php',
-						showDayAsWeeks: false
-					});  
-				});  
-			</script> 
-<pre>$(id).eventCalendar({
-  eventsjson: 'file.json',
-  showDayAsWeeks: false
-});</pre>					
-		</li>
 		<li class="fl">
 			<h2>Start week on Sunday</h2>
 			<p class="demoDesc">Also you can customize the day when the week starts</p>
@@ -193,7 +176,25 @@ $(id).eventCalendar({
   startWeekOnMonday: false
 });</pre>				
 		</li>
-		<li class="fl">
+		<li class="fl cb wide">
+			<h2>Calendar display</h2>
+			<p class="demoDesc">You can show all the days in a single line to make calendar widget smaller</p>
+			<div id="eventCalendarCalendarLine"></div>
+			<script>  
+				$(document).ready(function() {  
+					$("#eventCalendarCalendarLine").eventCalendar({
+						eventsjson: 'events.json.php',
+						showDayAsWeeks: false
+					});  
+				});  
+			</script> 
+<pre>$(id).eventCalendar({
+  eventsjson: 'file.json',
+  showDayAsWeeks: false
+});</pre>					
+		</li>
+		
+		<li class="fl thin">
 			<h2>Hide week days</h2>
 			<p class="demoDesc">Hide the day names in the calendar view</p>
 			<div id="eventCalendarWeekDays"></div>
@@ -228,6 +229,23 @@ $(id).eventCalendar({
 });</pre>	
 		</li>
 		<li class="fl">
+			<h2>Show all descriptions</h2>
+			<p class="demoDesc">By default, the plugin only shows the event that you select, but you can open all the descriptions in which you click on</p>
+			<div id="eventCalendarOnlyOneDescription"></div>
+			<script>  
+				$(document).ready(function() {  
+					$("#eventCalendarOnlyOneDescription").eventCalendar({
+						eventsjson: 'events.json.php',
+						onlyOneDescription: false
+					});  
+				});  
+			</script>
+<pre>$(id).eventCalendar({
+  eventsjson: 'file.json',
+  onlyOneDescription: false
+});</pre>				
+		</li>
+		<li class="fl">
 			<h2>Animation Speed</h2>
 			<p class="demoDesc">Also you can customize the speed and the opacity of the widget animation</p>
 			<div id="eventCalendarAnimation"></div>
@@ -246,7 +264,7 @@ $(id).eventCalendar({
   moveOpacity: 1
 });</pre>	
 		</li>
-		<li class="fl">
+		<li class="fl cb">
 			<h2>Events Scrollable</h2>
 			<p class="demoDesc">It is possible to add a Scroll panel for the events list to avoid panel resize on date changes</p>
 			<div id="eventCalendarScroll"></div>
@@ -263,6 +281,25 @@ $(id).eventCalendar({
   eventsScrollable: true
 });</pre>				
 		</li>
+		<li class="fl ">
+			<h2>Open links in new window</h2>
+			<p class="demoDesc">You can open event links in a new window</p>
+			<div id="eventCalendarNewWindow"></div>
+			<script>  
+				$(document).ready(function() {  
+					$("#eventCalendarNewWindow").eventCalendar({
+						eventsjson: 'events.json.php',
+						openEventInNewWindow: true,
+						showDescription: true // also it can be false
+					});  
+				});  
+			</script>
+<pre>$(id).eventCalendar({
+  eventsjson: 'file.json',
+  openEventInNewWindow: true,
+  showDescription: true // also it can be false
+});</pre>				
+		</li>
 		
 		
 		
@@ -276,9 +313,11 @@ $(id).eventCalendar({
 		<li>
 			<strong>Nerea Navarro</strong> <a href="http://twitter.com/#!/nereaestonta">@nereaestonta</a> - Translation & Testing
 		</li>
-		
 		<li>
 			<strong>Juan Francisco del Río</strong> <a href="http://twitter.com/#!/juanriopacheco">@juanriopacheco</a> - Javascript Knowledge
+		</li>
+		<li>
+			<strong>Nuria Martin</strong> <a href="http://twitter.com/#!/nmartins">@nmartins</a> - Design
 		</li>
 		<li>
 			<strong>Luis Calvo</strong> <a href="http://twitter.com/#!/LuisCalvoDiaz">@LuisCalvoDiaz</a> - Testing
@@ -286,6 +325,7 @@ $(id).eventCalendar({
 		<li>
 			<strong>David Montalvo</strong> <a href="http://twitter.com/#!/davidmontalvo">@davidmontalvo</a> - Testing
 		</li>
+		
 	</ul>
 	
 	
