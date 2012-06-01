@@ -1,0 +1,5 @@
+TODOS:
+OK - Responsive
+OK - Change button txt: "ir al evento"
+- Parameter with data format: dd/mm/yyy
+- Timeago Plugin integration

@@ -10,7 +10,6 @@
 	background-color:#fff;
  }
 .eventCalendar-wrap {
-	width:300px;
 	border:solid 1px #d3d3d3;
 	box-shadow:0 0 15px #999;
 	border-radius:5px;
@@ -179,7 +178,7 @@
 			.eventsCalendar-loading.error {
 				background-color:red;
 			}
-#eventsCalendar-list-wrap {
+.eventsCalendar-list-wrap {
 	min-height:100px;
 	position:relative;
 }
@@ -290,17 +289,19 @@
 
 /*= ONLY FOR DEMO PAGE */
 body { 
-	width:978px; 
+	width:978px;
 	box-shadow:0 0 10px #777; 
 	padding: 20px 40px; 
 	margin:0 auto;
 }
 a { color: #0E8EAB}
+/*
 .eventCalendar-wrap {
 	width:265px;
 }
+*/
 #DemoList { list-style-type:none; padding:0;}
-#DemoList > li { margin-right:40px; float:left;}
+#DemoList > li { margin-right:40px; }
 #DemoList > li > h2 { margin:20px 0 3px 0;}
 .demoDesc { width:200px; margin:0 0 10px 0;}
 .fl { float:left;}
@@ -354,5 +355,16 @@ pre {
 	padding:5px;
 	border:solid 1px #FED17E;
 	overflow:auto;
+}
+#license {
+	width:300px;
+	float:right;
+	font-size:10px;
+	line-height:12px;
+	text-align:center;
+}
+
+body#responsiveDemo {
+	width:auto;
 }
 /* end of demo page */

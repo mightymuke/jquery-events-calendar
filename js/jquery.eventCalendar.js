@@ -24,13 +24,17 @@ $.fn.eventCalendar = function(options){
 	this.each(function(){
 		
 		flags.wrap = $(this);
-		flags.wrap.addClass('eventCalendar-wrap').append("<div id='eventsCalendar-list-wrap'><p class='eventsCalendar-subtitle'></p><span class='eventsCalendar-loading'>loading...</span><div class='eventsCalendar-list-content'><ul class='eventsCalendar-list'></ul></div></div>");
+		flags.wrap.addClass('eventCalendar-wrap').append("<div class='eventsCalendar-list-wrap'><p class='eventsCalendar-subtitle'></p><span class='eventsCalendar-loading'>loading...</span><div class='eventsCalendar-list-content'><ul class='eventsCalendar-list'></ul></div></div>");
 		
 		if (eventsOpts.eventsScrollable) {
 			flags.wrap.find('.eventsCalendar-list-content').addClass('scrollable');
 		}
 		
-		flags.directionLeftMove = flags.wrap.width();
+		setCalendarWidth();
+		$(window).resize(function(){
+			setCalendarWidth();
+		});
+		//flags.directionLeftMove = flags.wrap.width();
 		
 		// show current month
 		dateSlider("current");
@@ -55,6 +59,9 @@ $.fn.eventCalendar = function(options){
 				
 			getEvents(eventsOpts.eventsLimit, year, month,false, "month");
 		})
+		
+		
+		
 	});
 	
 	// show event description
@@ -68,7 +75,7 @@ $.fn.eventCalendar = function(options){
 				var eventTarget = $(this).attr('target');
 				
 				// create a button to go to event url
-				desc.append('<a href="' + eventUrl + '" target="'+eventTarget+'" class="bt">ir al evento</a>')
+				desc.append('<a href="' + eventUrl + '" target="'+eventTarget+'" class="bt">'+eventsOpts.txt_GoToEventUrl+'</a>')
 			} 
 			
 			if (desc.is(':visible')) {
@@ -88,9 +95,8 @@ $.fn.eventCalendar = function(options){
 	};
 
 	function dateSlider(show, year, month) {
-		console.log(eventsOpts.txt_prev);
 		var $eventsCalendarSlider = $("<div class='eventsCalendar-slider'></div>"),
-			$eventsCalendarMonthWrap = $("<div class='eventsCalendar-monthWrap' style='width:"+flags.wrap.width()+"px'></div>"),
+			$eventsCalendarMonthWrap = $("<div class='eventsCalendar-monthWrap'></div>"),
 			$eventsCalendarTitle = $("<div class='eventsCalendar-currentTitle'><a href='#' class='monthTitle'></a></div>"),
 			$eventsCalendarArrows = $("<a href='#' class='arrow prev'><span>" + eventsOpts.txt_prev + "</span></a><a href='#' class='arrow next'><span>" + eventsOpts.txt_next + "</span></a>");
 			$eventsCalendarDaysList = $("<ul class='eventsCalendar-daysList'></ul>"),
@@ -252,7 +258,7 @@ $.fn.eventCalendar = function(options){
 		directionLeftMove = "-=" + flags.directionLeftMove;
 		eventContentHeight = "auto";
 		
-		subtitle = flags.wrap.find('#eventsCalendar-list-wrap .eventsCalendar-subtitle')
+		subtitle = flags.wrap.find('.eventsCalendar-list-wrap .eventsCalendar-subtitle')
 		if (!direction) {
 			// first load
 			subtitle.html(eventsOpts.txt_NextEvents);
@@ -349,9 +355,9 @@ $.fn.eventCalendar = function(options){
 				
 
 		});
+		setCalendarWidth();
 	}
-	
-	
+		
 	function changeMonth() {
 		flags.wrap.find('.arrow').click(function(e){
 			e.preventDefault();
@@ -375,7 +381,16 @@ $.fn.eventCalendar = function(options){
 	}
 
 	function showError(msg) {
-		flags.wrap.find('#eventsCalendar-list-wrap').html("<span class='eventsCalendar-loading error'>"+msg+" " +eventsOpts.eventsjson+"</span>");
+		flags.wrap.find('.eventsCalendar-list-wrap').html("<span class='eventsCalendar-loading error'>"+msg+" " +eventsOpts.eventsjson+"</span>");
+	}
+	
+	function setCalendarWidth(){
+		// resize calendar width on window resize
+		flags.directionLeftMove = flags.wrap.width();
+		flags.wrap.find('.eventsCalendar-monthWrap').width(flags.wrap.width() + 'px');
+		
+		flags.wrap.find('.eventsCalendar-list-wrap').width(flags.wrap.width() + 'px');
+		
 	}
 };
 
@@ -395,6 +410,7 @@ $.fn.eventCalendar.defaults = {
 	txt_next: "next",
 	txt_prev: "prev",
 	txt_NextEvents: "Next events:",
+	txt_GoToEventUrl: "See the event",
 	showDayAsWeeks: true,
 	startWeekOnMonday: true,
 	showDayNameInCalendar: true,
