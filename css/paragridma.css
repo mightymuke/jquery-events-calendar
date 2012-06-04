@@ -770,6 +770,7 @@ img, object { max-width: 100%; } /* http://unstoppablerobotninja.com/entry/fluid
 	.oh		{ overflow:hidden; }
 	.i 		{ font-style: italic; }
 	.u		{ text-decoration: underline; }
+	.ac		{ text-align:center; }
 
 
 
