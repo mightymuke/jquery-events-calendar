@@ -1,6 +1,6 @@
 /* =
 	jquery.eventCalendar.js
-	version: 0.3;
+	version: 0.4;
 	date: 28-05-2012
 	authors: 
 		Jaime Fernandez (@vissit)
@@ -9,7 +9,7 @@
 		Paradigma Tecnologico (@paradigmate)
 */
 
-$.fn.eventCalendar = function(options){
+;$.fn.eventCalendar = function(options){
  
 	var eventsOpts = $.extend({}, $.fn.eventCalendar.defaults, options);
 	
@@ -162,15 +162,17 @@ $.fn.eventCalendar = function(options){
 			if (eventsOpts.showDayNameInCalendar) {
 				$eventsCalendarDaysList.addClass('showDayNames');
 				
-				// if week start on monday
 				var i = 0;
+				// if week start on monday
 				if (eventsOpts.startWeekOnMonday) {
 					i = 1;
 				}
+				
 				for (; i < 7; i++) {
 					daysList.push('<li class="eventsCalendar-day-header">'+eventsOpts.dayNamesShort[i]+'</li>');
 					
 					if (i === 6 && eventsOpts.startWeekOnMonday) {
+						// print sunday header
 						daysList.push('<li class="eventsCalendar-day-header">'+eventsOpts.dayNamesShort[0]+'</li>');
 					}
 					
@@ -178,10 +180,12 @@ $.fn.eventCalendar = function(options){
 			}
 			
 			dt=new Date(year, month, 01);
-			var weekDay = dt.getDay();
+			var weekDay = dt.getDay(); // day of the week where month starts
+			
 			if (eventsOpts.startWeekOnMonday) {
 				weekDay = dt.getDay() - 1;
 			}
+			if (weekDay < 0) { weekDay = 6; } // if -1 is because day starts on sunday(0) and week starts on monday
 			for (i = weekDay; i > 0; i--) {
 				daysList.push('<li class="eventsCalendar-day empty"></li>');
 			}
@@ -326,7 +330,8 @@ $.fn.eventCalendar = function(options){
 								
 								} else {
 									eventStringDate = eventDay + "/" + eventMonthToShow + "/" + eventYear;
-									events.push('<li id="' + key + '"><time datetime="'+eventDate+'"><em>' + eventStringDate + '</em><small>'+eventHour+":"+eventMinute+'</small></time><a href="'+event.url+'" target="' + eventLinkTarget + '" class="eventTitle">' + event.title + '</a><p class="eventDesc ' + eventDescClass + '">' + event.description + '</p></li>');
+									
+									events.push('<li id="' + key + '" class="'+event.type+'"><time datetime="'+eventDate+'"><em>' + eventStringDate + '</em><small>'+eventHour+":"+eventMinute+'</small></time><a href="'+event.url+'" target="' + eventLinkTarget + '" class="eventTitle">' + event.title + '</a><p class="eventDesc ' + eventDescClass + '">' + event.description + '</p></li>');
 									i++;
 								}
 						}

@@ -3,3 +3,5 @@ OK - Responsive
 OK - Change button txt: "ir al evento"
 - Parameter with data format: dd/mm/yyy
 - Timeago Plugin integration
+- option to work without a json. just html
+- How do you add events to your jQuery Event Calendar? .dminetti1228@yahoo.com mail of 28 dejunio
