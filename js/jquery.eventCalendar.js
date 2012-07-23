@@ -1,6 +1,6 @@
 /* =
 	jquery.eventCalendar.js
-	version: 0.4;
+	version: 0.42;
 	date: 28-05-2012
 	authors: 
 		Jaime Fernandez (@vissit)
@@ -137,10 +137,11 @@
 		}
 		
 		// get date portions
-		var year = date.getFullYear(),
+		var year = date.getFullYear(), // year of the events
+			currentYear = (new Date).getFullYear(), // current year
 			month = date.getMonth(), // 0-11
 			monthToShow = month + 1;
-		
+
 		if (show != "current") {
 			// month change
 			getEvents(eventsOpts.eventsLimit, year, month,false, show);
@@ -193,7 +194,7 @@
 		for (dayCount = 1; dayCount <= daysOnTheMonth; dayCount++) {
 			var dayClass = "";
 			
-			if (day > 0 && dayCount === day) {
+			if (day > 0 && dayCount === day && year === currentYear) {
 				dayClass = "current";
 			}
 			daysList.push('<li id="dayList_' + dayCount + '" rel="'+dayCount+'" class="eventsCalendar-day '+dayClass+'"><a href="#">' + dayCount + '</a></li>');
@@ -324,6 +325,7 @@
 						// if month or day exist then only show matched events
 						if ((month === false || month == eventMonth) 
 								&& (day == '' || day == eventDay)
+								&& (year == '' || year == eventYear) // get only events of current year
 							) {
 								// if initial load then load only future events
 								if (month === false && eventDate < new Date()) {
