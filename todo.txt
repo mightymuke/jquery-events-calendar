@@ -1,6 +1,8 @@
 TODOS:
+- if month start on saturday or sundat, there is one more week, and the calendar hide the "Next events" text.
 OK - Responsive
 OK - Change button txt: "ir al evento"
+- Events of several days
 - Parameter with data format: dd/mm/yyy
 - Timeago Plugin integration
 - option to work without a json. just html

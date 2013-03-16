@@ -1,0 +1,13 @@
+{
+	"folders":
+	[
+		{
+			"path": "/D/wamp/www/eventCalendar",
+			"folder_exclude_patterns": ["download"]
+		}
+	],
+    "settings":
+    {
+        "tab_size": 4
+    }
+}
