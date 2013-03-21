@@ -55,6 +55,25 @@
 	<hr />
 	<div class="container">
 		<div class="row">
+			<div class="g6">
+				<h2 class="h4">Human Date Format</h2>
+				<p class="demoDesc">Most of you don't like timestamp date format, so now you can use another formats</p>
+				<div id="eventCalendarHumanDate"></div>
+				<script>
+					$(document).ready(function() {
+						$("#eventCalendarHumanDate").eventCalendar({
+							eventsjson: 'json/event.humanDate.json.php',
+							jsonDateFormat: 'human'  // 'YYYY-MM-DD HH:MM:SS'
+						});
+					});
+				</script>
+<pre>$(id).eventCalendar({
+  eventsjson: 'file.json',
+  jsonDateFormat: 'human'
+});</pre>
+			</div>
+		</div>
+		<div class="row">
 			<div class="g4">
 				<h2 class="h4">Default Demo</h2>
 				<p class="demoDesc">Example of jQuery Events Calendar with default parameters</p>
@@ -319,7 +338,10 @@ $(id).eventCalendar({
   showDescription: true // also it can be false
 });</pre>
 			</div>
-		</div>
+
+
+
+
 	</div>
 	<hr />
 	<div class="container">
@@ -380,8 +402,8 @@ $(id).eventCalendar({
 </body>
 
 <!--script src="js/jquery.timeago.js" type="text/javascript"></script-->
-<!--<script src="js/jquery.eventCalendar.min.js" type="text/javascript"></script>-->
 <script src="js/jquery.eventCalendar.min.js" type="text/javascript"></script>
+<!--<script src="js/jquery.eventCalendar.js" type="text/javascript"></script>-->
 
 
 

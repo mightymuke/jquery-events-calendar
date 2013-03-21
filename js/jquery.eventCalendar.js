@@ -1,6 +1,6 @@
 /* =
 	jquery.eventCalendar.js
-	version: 0.5;
+	version: 0.51;
 	date: 16-03-2013
 	authors:
 		Jaime Fernandez (@vissit)
@@ -43,7 +43,7 @@
 
 		changeMonth();
 
-		flags.wrap.find('.eventsCalendar-daysList').on('click','.eventsCalendar-day a',function(e){
+		flags.wrap.on('click','.eventsCalendar-day a',function(e){
 		//flags.wrap.find('.eventsCalendar-day a').live('click',function(e){
 			e.preventDefault();
 			var year = flags.wrap.attr('data-current-year'),
@@ -52,7 +52,7 @@
 
 			getEvents(false, year, month,day, "day");
 		});
-		flags.wrap.find('.monthTitle').on('click',function(e){
+		flags.wrap.on('click','.monthTitle', function(e){
 		//flags.wrap.find('.monthTitle').live('click',function(e){
 			e.preventDefault();
 			var year = flags.wrap.attr('data-current-year'),
@@ -197,7 +197,7 @@
 			var dayClass = "";
 
 			if (day > 0 && dayCount === day && year === currentYear) {
-				dayClass = "current";
+				dayClass = "today";
 			}
 			daysList.push('<li id="dayList_' + dayCount + '" rel="'+dayCount+'" class="eventsCalendar-day '+dayClass+'"><a href="#">' + dayCount + '</a></li>');
 		}
@@ -259,6 +259,11 @@
 			// filter previus saved json
 			getEventsData(flags.eventsJson, limit, year, month, day, direction);
 		}
+
+		if (day > '') {
+			flags.wrap.find('.current').removeClass('current');
+			flags.wrap.find('#dayList_'+day).addClass('current');
+		}
 	}
 
 	function getEventsData(data, limit, year, month, day, direction){
@@ -313,17 +318,36 @@
 
 				var i = 0;
 				$.each(data, function(key, event) {
-					var eventDate = new Date(parseInt(event.date)),
+					if (eventsOpts.jsonDateFormat == 'human') {
+						var eventDateTime = event.date.split(" "),
+							eventDate = eventDateTime[0].split("-"),
+							eventTime = eventDateTime[1].split(":"),
+							eventYear = eventDate[0],
+							eventMonth = parseInt(eventDate[1]) - 1,
+							eventDay = eventDate[2],
+							//eventMonthToShow = eventMonth,
+							eventMonthToShow = parseInt(eventMonth) + 1,
+							eventHour = eventTime[0],
+							eventMinute = eventTime[1],
+							eventSeconds = eventTime[2],
+							eventDate = new Date(eventYear, eventMonth, eventDay, eventHour, eventMinute, eventSeconds);
+					} else {
+						var eventDate = new Date(parseInt(event.date)),
 							eventYear = eventDate.getFullYear(),
 							eventMonth = eventDate.getMonth(),
-							eventDay = eventDate.getDate();
-					if (limit === 0 || limit > i) {
-						var eventMonthToShow = eventMonth + 1,
+							eventDay = eventDate.getDate(),
+							eventMonthToShow = eventMonth + 1,
 							eventHour = eventDate.getHours(),
 							eventMinute = eventDate.getMinutes();
-							if (eventMinute <= 9) {
-								eventMinute = "0" + eventMinute;
-							}
+
+					}
+					if (eventMinute <= 9) {
+						eventMinute = "0" + eventMinute;
+					}
+
+
+
+					if (limit === 0 || limit > i) {
 						// if month or day exist then only show matched events
 						if ((month === false || month == eventMonth)
 								&& (day == '' || day == eventDay)
@@ -334,8 +358,12 @@
 
 								} else {
 									eventStringDate = eventDay + "/" + eventMonthToShow + "/" + eventYear;
-
-									events.push('<li id="' + key + '" class="'+event.type+'"><time datetime="'+eventDate+'"><em>' + eventStringDate + '</em><small>'+eventHour+":"+eventMinute+'</small></time><a href="'+event.url+'" target="' + eventLinkTarget + '" class="eventTitle">' + event.title + '</a><p class="eventDesc ' + eventDescClass + '">' + event.description + '</p></li>');
+									if (event.url) {
+										var eventTitle = '<a href="'+event.url+'" target="' + eventLinkTarget + '" class="eventTitle">' + event.title + '</a>';
+									} else {
+										var eventTitle = '<span class="eventTitle">'+event.title+'</span>';
+									}
+									events.push('<li id="' + key + '" class="'+event.type+'"><time datetime="'+eventDate+'"><em>' + eventStringDate + '</em><small>'+eventHour+":"+eventMinute+'</small></time>'+eventTitle+'<p class="eventDesc ' + eventDescClass + '">' + event.description + '</p></li>');
 									i++;
 								}
 						}
@@ -427,6 +455,7 @@ $.fn.eventCalendar.defaults = {
 	onlyOneDescription: true,
 	openEventInNewWindow: false,
 	eventsScrollable: false,
+	jsonDateFormat: 'timestamp', // you can use also "human" 'YYYY-MM-DD HH:MM:SS'
 	moveSpeed: 500,	// speed of month move when you clic on a new date
 	moveOpacity: 0.15, // month and events fadeOut to this opacity
 	jsonData: "", 	// to load and inline json (not ajax calls)
