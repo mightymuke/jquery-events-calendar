@@ -1,10 +1,9 @@
 /* =
 	jquery.eventCalendar.js
-	version: 0.51;
-	date: 16-03-2013
-	authors:
+	version: 0.54
+	date: 18-04-2013
+	author:
 		Jaime Fernandez (@vissit)
-		Nerea Navarro (@nereaestonta)
 	company:
 		Paradigma Tecnologico (@paradigmate)
 */
@@ -324,7 +323,7 @@
 							eventTime = eventDateTime[1].split(":"),
 							eventYear = eventDate[0],
 							eventMonth = parseInt(eventDate[1]) - 1,
-							eventDay = eventDate[2],
+							eventDay = parseInt(eventDate[2]),
 							//eventMonthToShow = eventMonth,
 							eventMonthToShow = parseInt(eventMonth) + 1,
 							eventHour = eventTime[0],
@@ -341,14 +340,15 @@
 							eventMinute = eventDate.getMinutes();
 
 					}
-					if (eventMinute <= 9) {
-						eventMinute = "0" + eventMinute;
-					}
 
+					if (parseInt(eventMinute) <= 9) {
+						eventMinute = "0" + parseInt(eventMinute);
+					}
 
 
 					if (limit === 0 || limit > i) {
 						// if month or day exist then only show matched events
+
 						if ((month === false || month == eventMonth)
 								&& (day == '' || day == eventDay)
 								&& (year == '' || year == eventYear) // get only events of current year
@@ -371,7 +371,7 @@
 
 					// add mark in the dayList to the days with events
 					if (eventYear == flags.wrap.attr('data-current-year') && eventMonth == flags.wrap.attr('data-current-month')) {
-						flags.wrap.find('.currentMonth .eventsCalendar-daysList #dayList_' + eventDay).addClass('dayWithEvents');
+						flags.wrap.find('.currentMonth .eventsCalendar-daysList #dayList_' + parseInt(eventDay)).addClass('dayWithEvents');
 					}
 
 				});
