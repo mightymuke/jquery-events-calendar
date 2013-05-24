@@ -62,7 +62,7 @@
 
 	// show event description
 	flags.wrap.find('.eventsCalendar-list').on('click','.eventTitle',function(e){
-		if(!eventsOpts.showDescription) {
+		if(eventsOpts.collapsible && eventsOpts.showDescription) {
 			e.preventDefault();
 			var desc = $(this).parent().find('.eventDesc');
 
@@ -375,6 +375,9 @@
 			flags.wrap.find('.eventsCalendar-list')
 				.html(events.join(''));
 
+			if (eventsOpts.collapsible)
+				flags.wrap.find('.eventDesc').hide();
+
 			flags.wrap.find('.eventsCalendar-list').animate({
 				opacity: 1,
 				height: "toggle"
@@ -442,6 +445,7 @@ $.fn.eventCalendar.defaults = {
 	startWeekOnMonday: true,
 	showDayNameInCalendar: true,
 	showDescription: false,
+	collapsible: false,
 	onlyOneDescription: true,
 	openEventInNewWindow: false,
 	eventsScrollable: false,
