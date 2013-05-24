@@ -33,12 +33,22 @@
 		$(window).resize(function(){
 			setCalendarWidth();
 		});
-		//flags.directionLeftMove = flags.wrap.width();
 
 		// show current month
 		dateSlider("current");
 
-		getEvents(eventsOpts.eventsLimit, false, false, false, false);
+ 		var year = flags.wrap.attr('data-current-year');
+		var month = flags.wrap.attr('data-current-month');
+		var date = new Date();
+		var day = "" + date.getDate();
+
+		if (eventsOpts.initialEvents && eventsOpts.initialEvents === 'day') {
+			getEvents(eventsOpts.eventsLimit, year, month, day, "day");
+		} else if (eventsOpts.initialEvents && eventsOpts.initialEvents === "month") {
+			getEvents(eventsOpts.eventsLimit, year, month, false, "month");
+		} else {
+			getEvents(eventsOpts.eventsLimit, false, false, false, false);
+		}
 
 		changeMonth();
 
@@ -57,7 +67,6 @@
 
 			getEvents(eventsOpts.eventsLimit, year, month, false, "month");
 		})
-
 	});
 
 	// show event description
@@ -451,6 +460,7 @@ $.fn.eventCalendar.defaults = {
 	onlyOneDescription: true,
 	openEventInNewWindow: false,
 	eventsScrollable: false,
+	initialEvents: false, // false for upcoming, 'day' for today, or 'month' for this month.
 	jsonDateFormat: 'timestamp', // you can use also "human" which is the format 'YYYY-MM-DD HH:MM:SS'
 	moveSpeed: 500,	// speed of month move when you clic on a new date
 	moveOpacity: 0.15, // month and events fadeOut to this opacity
@@ -458,4 +468,3 @@ $.fn.eventCalendar.defaults = {
 	cacheJson: true	// if true plugin get a json only first time and after plugin filter events
 					// if false plugin get a new json on each date change
 };
-
