@@ -254,8 +254,8 @@
 			getEventsData(flags.eventsJson, limit, year, month, day, direction);
 		}
 
+		flags.wrap.find('.current').removeClass('current');
 		if (day > '') {
-			flags.wrap.find('.current').removeClass('current');
 			flags.wrap.find('#dayList_'+day).addClass('current');
 		}
 	}
