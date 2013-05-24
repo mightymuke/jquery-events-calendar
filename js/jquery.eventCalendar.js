@@ -71,7 +71,9 @@
 				var eventTarget = $(this).attr('target');
 
 				// create a button to go to event url
-				desc.append('<a href="' + eventUrl + '" target="'+eventTarget+'" class="bt">'+eventsOpts.txt_GoToEventUrl+'</a>')
+				if (eventUrl && eventUrl.length > 0) {
+					desc.append('<a href="' + eventUrl + '" target="'+eventTarget+'" class="bt">'+eventsOpts.txt_GoToEventUrl+'</a>')
+				}
 			}
 
 			if (desc.is(':visible')) {
