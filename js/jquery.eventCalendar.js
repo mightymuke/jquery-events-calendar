@@ -38,35 +38,30 @@
 		// show current month
 		dateSlider("current");
 
-		getEvents(eventsOpts.eventsLimit,false,false,false,false);
+		getEvents(eventsOpts.eventsLimit, false, false, false, false);
 
 		changeMonth();
 
 		flags.wrap.on('click','.eventsCalendar-day a',function(e){
-		//flags.wrap.find('.eventsCalendar-day a').live('click',function(e){
 			e.preventDefault();
 			var year = flags.wrap.attr('data-current-year'),
 				month = flags.wrap.attr('data-current-month'),
 				day = $(this).parent().attr('rel');
 
-			getEvents(false, year, month,day, "day");
+			getEvents(false, year, month, day, "day");
 		});
 		flags.wrap.on('click','.monthTitle', function(e){
-		//flags.wrap.find('.monthTitle').live('click',function(e){
 			e.preventDefault();
 			var year = flags.wrap.attr('data-current-year'),
 				month = flags.wrap.attr('data-current-month');
 
-			getEvents(eventsOpts.eventsLimit, year, month,false, "month");
+			getEvents(eventsOpts.eventsLimit, year, month, false, "month");
 		})
-
-
 
 	});
 
 	// show event description
 	flags.wrap.find('.eventsCalendar-list').on('click','.eventTitle',function(e){
-	//flags.wrap.find('.eventsCalendar-list .eventTitle').live('click',function(e){
 		if(!eventsOpts.showDescription) {
 			e.preventDefault();
 			var desc = $(this).parent().find('.eventDesc');
@@ -112,8 +107,6 @@
 
 		flags.wrap.find('.eventsCalendar-monthWrap.currentMonth').removeClass('currentMonth').addClass('oldMonth');
 		$eventsCalendarMonthWrap.addClass('currentMonth').append($eventsCalendarTitle, $eventsCalendarDaysList);
-
-
 
 		// if current show current month & day
 		if (show === "current") {
@@ -296,7 +289,6 @@
 			height: eventContentHeight
 		}, eventsOpts.moveSpeed, function() {
 			flags.wrap.find('.eventsCalendar-list').css({'left':0, 'height': 'auto'}).hide();
-			//wrap.find('.eventsCalendar-list li').fadeIn();
 
 			var events = [];
 
@@ -338,13 +330,11 @@
 							eventMonthToShow = eventMonth + 1,
 							eventHour = eventDate.getHours(),
 							eventMinute = eventDate.getMinutes();
-
 					}
 
 					if (parseInt(eventMinute) <= 9) {
 						eventMinute = "0" + parseInt(eventMinute);
 					}
-
 
 					if (limit === 0 || limit > i) {
 						// if month or day exist then only show matched events
@@ -434,7 +424,7 @@
 
 // define the parameters with the default values of the function
 $.fn.eventCalendar.defaults = {
-    eventsjson: 'js/events.json',
+	eventsjson: 'js/events.json',
 	eventsLimit: 4,
 	monthNames: [ "January", "February", "March", "April", "May", "June",
 		"July", "August", "September", "October", "November", "December" ],
@@ -455,7 +445,7 @@ $.fn.eventCalendar.defaults = {
 	onlyOneDescription: true,
 	openEventInNewWindow: false,
 	eventsScrollable: false,
-	jsonDateFormat: 'timestamp', // you can use also "human" 'YYYY-MM-DD HH:MM:SS'
+	jsonDateFormat: 'timestamp', // you can use also "human" which is the format 'YYYY-MM-DD HH:MM:SS'
 	moveSpeed: 500,	// speed of month move when you clic on a new date
 	moveOpacity: 0.15, // month and events fadeOut to this opacity
 	jsonData: "", 	// to load and inline json (not ajax calls)
