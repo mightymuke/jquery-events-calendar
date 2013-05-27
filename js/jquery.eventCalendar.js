@@ -1,4 +1,4 @@
-/* =
+/*
 	jquery.eventCalendar.js
 	version: 0.54
 	date: 18-04-2013
@@ -6,6 +6,15 @@
 		Jaime Fernandez (@vissit)
 	company:
 		Paradigma Tecnologico (@paradigmate)
+
+	JSON data format:
+		date        : event date either in timestamp format or 'YYYY-MM-DD HH:MM:SS'
+		startdate   : event start date - used if event spans a number of days (defaults to date)
+		enddate     : event end date - used if event spans a number of days (defaults to date)
+		type        : event type - used to generate a class for styling
+		title       : event name - becomes the header line
+		description : event description - becomes the detail (optionally hidden)
+		url         : url of page containing event details
 */
 
 ;(function($) {
@@ -100,13 +109,13 @@
 				// user send a json in the plugin params
 				plugin.settings.cacheJson = true;
 
-				eventsJson = plugin.settings.jsonData;
+				eventsJson = fillMissingDateInformation(plugin.settings.jsonData);
 				getEventsData(eventsJson, limit, year, month, day, direction);
 
 			} else if (!plugin.settings.cacheJson || !direction) {
 				// first load: load json and save it to future filters
 				$.getJSON(plugin.settings.eventsjson + "?limit="+limit+"&year="+year+"&month="+month+"&day="+day, function(data) {
-					eventsJson = data; // save data to future filters
+					eventsJson = fillMissingDateInformation(data); // save data to future filters
 					getEventsData(eventsJson, limit, year, month, day, direction);
 				}).error(function() {
 						showError("error getting json: ");
@@ -173,59 +182,29 @@
 
 					var i = 0;
 					$.each(data, function(key, event) {
-						if (plugin.settings.jsonDateFormat == 'human') {
-							var eventDateTime = event.date.split(" "),
-								eventDate = eventDateTime[0].split("-"),
-								eventTime = eventDateTime[1].split(":"),
-								eventYear = eventDate[0],
-								eventMonth = parseInt(eventDate[1]) - 1,
-								eventDay = parseInt(eventDate[2]),
-							//eventMonthToShow = eventMonth,
-								eventMonthToShow = parseInt(eventMonth) + 1,
-								eventHour = eventTime[0],
-								eventMinute = eventTime[1],
-								eventSeconds = eventTime[2],
-								eventDate = new Date(eventYear, eventMonth, eventDay, eventHour, eventMinute, eventSeconds);
-						} else {
-							var eventDate = new Date(parseInt(event.date)),
-								eventYear = eventDate.getFullYear(),
-								eventMonth = eventDate.getMonth(),
-								eventDay = eventDate.getDate(),
-								eventMonthToShow = eventMonth + 1,
-								eventHour = eventDate.getHours(),
-								eventMinute = eventDate.getMinutes();
-						}
-
-						if (parseInt(eventMinute) <= 9) {
-							eventMinute = "0" + parseInt(eventMinute);
-						}
-
 						if (limit === 0 || limit > i) {
 							// if month or day exist then only show matched events
 
-							if ((month === false || month == eventMonth)
-								&& (day == '' || day == eventDay)
-								&& (year == '' || year == eventYear) // get only events of current year
-								) {
+							if (plugin.eventIsCurrent(event, month, day, year)) {
 								// if initial load then load only future events
-								if (month === false && eventDate < new Date()) {
+								if (month === false && event.eventDate < new Date()) {
 
 								} else {
-									eventStringDate = eventDay + "/" + eventMonthToShow + "/" + eventYear;
+									eventStringDate = event.eventDay + "/" + event.eventMonthToShow + "/" + event.eventYear;
 									if (event.url) {
 										var eventTitle = '<a href="'+event.url+'" target="' + eventLinkTarget + '" class="eventTitle">' + event.title + '</a>';
 									} else {
 										var eventTitle = '<span class="eventTitle">'+event.title+'</span>';
 									}
-									events.push('<li id="' + key + '" class="'+event.type+'"><time datetime="'+eventDate+'"><em>' + eventStringDate + '</em><small>'+eventHour+":"+eventMinute+'</small></time>'+eventTitle+'<div class="eventDesc ' + eventDescClass + '">' + event.description + '</div></li>');
+									events.push('<li id="' + key + '" class="'+event.type+'"><time datetime="'+event.eventDate+'"><em>' + eventStringDate + '</em><small>'+event.eventHour+":"+event.eventMinute+'</small></time>'+eventTitle+'<div class="eventDesc ' + eventDescClass + '">' + event.description + '</div></li>');
 									i++;
 								}
 							}
 						}
 
 						// add mark in the dayList to the days with events
-						if (eventYear == $element.attr('data-current-year') && eventMonth == $element.attr('data-current-month')) {
-							$element.find('.currentMonth .eventsCalendar-daysList #dayList_' + parseInt(eventDay)).addClass('dayWithEvents');
+						if (event.eventYear == $element.attr('data-current-year') && event.eventMonth == $element.attr('data-current-month')) {
+							$element.find('.currentMonth .eventsCalendar-daysList #dayList_' + parseInt(event.eventDay)).addClass('dayWithEvents');
 						}
 
 					});
@@ -365,6 +344,47 @@
 		/* The above still needs to be refactored     */
 		/* ========================================== */
 
+		plugin.eventIsCurrent = function (event, month, day, year) {
+			return ((month === false || month == event.eventMonth)
+				&& (day == '' || day == event.eventDay)
+				&& (year == '' || year == event.eventYear));
+		};
+
+		var fillMissingDateInformation = function(data) {
+			if (data.length) {
+				$.each(data, function(key, event) {
+					if (plugin.settings.jsonDateFormat == 'human') {
+						var eventDateTime = event.date.split(" ");
+						var eventDate = eventDateTime[0].split("-");
+						var eventTime = eventDateTime[1].split(":");
+						event.eventYear = eventDate[0];
+						event.eventMonth = parseInt(eventDate[1]) - 1;
+						event.eventDay = parseInt(eventDate[2]);
+						event.eventMonthToShow = parseInt(event.eventMonth) + 1;
+						event.eventHour = eventTime[0];
+						event.eventMinute = eventTime[1];
+						event.eventSeconds = eventTime[2];
+						event.eventDate = new Date(event.eventYear, event.eventMonth, event.eventDay, event.eventHour, event.eventMinute, event.eventSeconds);
+					} else {
+						var eventDate = new Date(parseInt(event.date));
+						event.eventDate = eventDate;
+						event.eventYear = eventDate.getFullYear();
+						event.eventMonth = eventDate.getMonth();
+						event.eventDay = eventDate.getDate();
+						event.eventMonthToShow = event.eventMonth + 1;
+						event.eventHour = eventDate.getHours();
+						event.eventMinute = eventDate.getMinutes();
+						event.eventSeconts = eventDate.getSeconds();
+					}
+					if (parseInt(event.eventMinute) <= 9) {
+						event.eventMinute = "0" + parseInt(event.eventMinute);
+					}
+				});
+			}
+
+			return data;
+		}
+
 		// Resize calendar width on window resize
 		var setCalendarWidth = function() {
 			directionLeftMove = $element.width();
@@ -482,7 +502,7 @@
 		eventsjson               : 'js/events.json',
 		jsonDateFormat           : 'timestamp', // you can use also "human" which is the format 'YYYY-MM-DD HH:MM:SS'
 		jsonData                 : "",          // to load and inline json (not ajax calls)
-		cacheJson                : true,         // if true plugin get a json only first time and after plugin filter events
+		cacheJson                : true,        // if true plugin get a json only first time and after plugin filter events
 		                                        // if false plugin get a new json on each date change
 		eventsLimit              : 4,
 		monthNames               : [ "January", "February", "March", "April", "May", "June",
