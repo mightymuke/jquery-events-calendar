@@ -185,18 +185,19 @@
 						if (limit === 0 || limit > i) {
 							// if month or day exist then only show matched events
 
-							if (plugin.eventIsCurrent(event, month, day, year)) {
+							if (plugin.eventIsCurrent(event, year, month, day)) {
 								// if initial load then load only future events
 								if (month === false && event.eventDate < new Date()) {
 
 								} else {
-									eventStringDate = event.eventDay + "/" + event.eventMonthToShow + "/" + event.eventYear;
+									var eventStringDate = event.eventDay + "/" + event.eventMonthToShow + "/" + event.eventYear;
+									var eventTitleStyle = (plugin.eventIsToday(event, year, month, day)) ? "current" : "";
 									if (event.url) {
-										var eventTitle = '<a href="'+event.url+'" target="' + eventLinkTarget + '" class="eventTitle">' + event.title + '</a>';
+										var eventTitle = '<a href="' + event.url + '" target="' + eventLinkTarget + '" class="eventTitle ' + eventTitleStyle + '">' + event.title + '</a>';
 									} else {
-										var eventTitle = '<span class="eventTitle">'+event.title+'</span>';
+										var eventTitle = '<span class="eventTitle ' + eventTitleStyle + '">' + event.title + '</span>';
 									}
-									events.push('<li id="' + key + '" class="'+event.type+'"><time datetime="'+event.eventDate+'"><em>' + eventStringDate + '</em><small>'+event.eventHour+":"+event.eventMinute+'</small></time>'+eventTitle+'<div class="eventDesc ' + eventDescClass + '">' + event.description + '</div></li>');
+									events.push('<li id="' + key + '" class="' + event.type + '"><time datetime="' + event.eventDate + '"><em>' + eventStringDate + '</em><small>' + event.eventHour + ":" + event.eventMinute + '</small></time>' + eventTitle + '<div class="eventDesc ' + eventDescClass + '">' + event.description + '</div></li>');
 									i++;
 								}
 							}
@@ -344,10 +345,34 @@
 		/* The above still needs to be refactored     */
 		/* ========================================== */
 
-		plugin.eventIsCurrent = function (event, month, day, year) {
-			return ((month === false || month == event.eventMonth)
-				&& (day == '' || day == event.eventDay)
-				&& (year == '' || year == event.eventYear));
+		var eventIsWithinDateRange = function (startDate, endDate, year, month, day) {
+			// Check Year
+			if ((year != "") && (year < startDate.getFullYear() || year > endDate.getFullYear())) {
+				return false;
+			}
+
+			// Check Month
+			if ((month === true) && (month < startDate.getMonth() || month > endDate.getMonth())) {
+				return false;
+			}
+
+			// Check Day
+			if ((day != "") && (day < startDate.getDate() || day > endDate.getDate())) {
+				return false;
+			}
+
+			return true;
+		}
+
+		plugin.eventIsToday = function (event, year, month, day) {
+			var date = new Date(parseInt(event.date));
+			return eventIsWithinDateRange(date, date, year, month, day);
+		};
+
+		plugin.eventIsCurrent = function (event, year, month, day) {
+			var startDate = (event.startdate) ? new Date(parseInt(event.startdate)) : new Date(parseInt(event.date));
+			var endDate = (event.enddate) ? new Date(parseInt(event.enddate)) : new Date(parseInt(event.date));
+			return eventIsWithinDateRange(startDate, endDate, year, month, day);
 		};
 
 		var fillMissingDateInformation = function(data) {
@@ -383,7 +408,7 @@
 			}
 
 			return data;
-		}
+		};
 
 		// Resize calendar width on window resize
 		var setCalendarWidth = function() {
@@ -397,7 +422,7 @@
 			$(window).resize(function () {
 				setCalendarWidth();
 			});
-		}
+		};
 
 		plugin._initialiseContentSrolling = function() {
 			if (plugin.settings.eventsScrollable) {
