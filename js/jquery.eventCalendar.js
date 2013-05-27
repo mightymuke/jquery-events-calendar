@@ -56,7 +56,11 @@
 		}
 
 		var sortJson = function(a, b){
-			return a.date.toLowerCase() > b.date.toLowerCase() ? 1 : -1;
+			if (plugin.settings.sortAscending) {
+				return a.date.toLowerCase() > b.date.toLowerCase() ? 1 : -1;
+			} else {
+				return a.date.toLowerCase() < b.date.toLowerCase() ? 1 : -1;
+			}
 		}
 
 		var num_abbrev_str = function(num) {
@@ -529,6 +533,7 @@
 		jsonData                 : "",          // to load and inline json (not ajax calls)
 		cacheJson                : true,        // if true plugin get a json only first time and after plugin filter events
 		                                        // if false plugin get a new json on each date change
+		sortAscending            : true,        // false to sort descending
 		eventsLimit              : 4,
 		monthNames               : [ "January", "February", "March", "April", "May", "June",
 		                           "July", "August", "September", "October", "November", "December" ],
