@@ -9,8 +9,8 @@
 
 	JSON data format:
 		date        : event date either in timestamp format or 'YYYY-MM-DD HH:MM:SS'
-		startdate   : event start date - used if event spans a number of days (defaults to date)
-		enddate     : event end date - used if event spans a number of days (defaults to date)
+		startDate   : event start date - used if event spans a number of days (defaults to date)
+		endDate     : event end date - used if event spans a number of days (defaults to date)
 		type        : event type - used to generate a class for styling
 		title       : event name - becomes the header line
 		description : event description - becomes the detail (optionally hidden)
@@ -350,22 +350,32 @@
 		/* ========================================== */
 
 		var eventIsWithinDateRange = function (startDate, endDate, year, month, day) {
+			var start = 0;
+			var end = 0;
+			var dateToCheck = 0;
+
 			// Check Year
-			if ((year != "") && (year < startDate.getFullYear() || year > endDate.getFullYear())) {
-				return false;
+			if (year != "") {
+				start += startDate.getFullYear() * 10000;
+				end += endDate.getFullYear() * 10000;
+				dateToCheck += parseInt(year) * 10000;
 			}
 
 			// Check Month
-			if ((month === true) && (month < startDate.getMonth() || month > endDate.getMonth())) {
-				return false;
+			if (month !== false) {
+				start += startDate.getMonth() * 100;
+				end += endDate.getMonth() * 100;
+				dateToCheck += month * 100;
 			}
 
 			// Check Day
-			if ((day != "") && (day < startDate.getDate() || day > endDate.getDate())) {
-				return false;
+			if (day != "") {
+				start += startDate.getDate();
+				end += endDate.getDate();
+				dateToCheck += parseInt(day);
 			}
 
-			return true;
+			return ((dateToCheck >= start) && (dateToCheck <= end));
 		}
 
 		plugin.eventIsToday = function (event, year, month, day) {
@@ -374,8 +384,8 @@
 		};
 
 		plugin.eventIsCurrent = function (event, year, month, day) {
-			var startDate = (event.startdate) ? new Date(parseInt(event.startdate)) : new Date(parseInt(event.date));
-			var endDate = (event.enddate) ? new Date(parseInt(event.enddate)) : new Date(parseInt(event.date));
+			var startDate = (event.startDate) ? new Date(parseInt(event.startDate)) : new Date(parseInt(event.date));
+			var endDate = (event.endDate) ? new Date(parseInt(event.endDate)) : new Date(parseInt(event.date));
 			return eventIsWithinDateRange(startDate, endDate, year, month, day);
 		};
 
@@ -528,18 +538,18 @@
 
 	// Define the parameters with the default values of the function
 	$.fn.eventCalendar.defaults = {
-		eventsjson               : 'js/events.json',
-		jsonDateFormat           : 'timestamp', // you can use also "human" which is the format 'YYYY-MM-DD HH:MM:SS'
+		eventsjson               : "js/events.json",
+		jsonDateFormat           : "timestamp", // you can use also "human" which is the format 'YYYY-MM-DD HH:MM:SS'
 		jsonData                 : "",          // to load and inline json (not ajax calls)
 		cacheJson                : true,        // if true plugin get a json only first time and after plugin filter events
 		                                        // if false plugin get a new json on each date change
 		sortAscending            : true,        // false to sort descending
 		eventsLimit              : 4,
 		monthNames               : [ "January", "February", "March", "April", "May", "June",
-		                           "July", "August", "September", "October", "November", "December" ],
-		dayNames                 : [ 'Sunday','Monday','Tuesday','Wednesday',
-		                             'Thursday','Friday','Saturday' ],
-		dayNamesShort            : [ 'Sun','Mon','Tue','Wed', 'Thu','Fri','Sat' ],
+		                             "July", "August", "September", "October", "November", "December" ],
+		dayNames                 : [ "Sunday", "Monday", "Tuesday", "Wednesday",
+		                             "Thursday", "Friday", "Saturday" ],
+		dayNamesShort            : [ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" ],
 		txt_noEvents             : "There are no events in this period",
 		txt_SpecificEvents_prev  : "",
 		txt_SpecificEvents_after : "events:",
