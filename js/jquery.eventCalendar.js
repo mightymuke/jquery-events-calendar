@@ -12,6 +12,8 @@
 		startDate   : event start date - used if event spans a number of days (defaults to date)
 		endDate     : event end date - used if event spans a number of days (defaults to date)
 		type        : event type - used to generate a class for styling
+		type        : (obsolete) event class - used to generate a class for styling
+		class       : event class - used to generate a class for styling
 		title       : event name - becomes the header line
 		description : event description - becomes the detail (optionally hidden)
 		url         : url of page containing event details
@@ -250,7 +252,11 @@
 									} else {
 										var eventTitle = '<span class="eventTitle ' + eventTitleStyle + '">' + event.title + '</span>';
 									}
-									events.push('<li id="' + key + '" class="' + event.type + '"><time datetime="' + event.eventDate + '"><em>' + eventStringDate + '</em><small>' + event.eventHour + ":" + event.eventMinute + '</small></time>' + eventTitle + '<div class="eventDesc ' + eventDescClass + '">' + event.description + '</div></li>');
+									var eventClass = event.class;
+									if (!eventClass || eventClass.length < 1) {
+										eventClass = event.type;
+									}
+									events.push('<li id="' + key + '" class="' + eventClass + '"><time datetime="' + event.eventDate + '"><em>' + eventStringDate + '</em><small>' + event.eventHour + ":" + event.eventMinute + '</small></time>' + eventTitle + '<div class="eventDesc ' + eventDescClass + '">' + event.description + '</div></li>');
 									i++;
 								}
 							}
