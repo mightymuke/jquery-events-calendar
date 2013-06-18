@@ -550,7 +550,7 @@
 
     // Define the parameters with the default values of the function
     $.fn.eventCalendar.defaults = {
-        eventsjson               : "js/events.json",
+        eventsJson               : "js/events.json",
         jsonDateFormat           : "timestamp", // you can use also "human" which is the format 'YYYY-MM-DD HH:MM:SS'
         jsonData                 : "",          // to load and inline json (not ajax calls)
         cacheJson                : true,        // if true plugin get a json only first time and after plugin filter events
