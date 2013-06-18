@@ -576,5 +576,11 @@
 		moveSpeed                : 500,         // speed of month move when you click on a new date
 		moveOpacity              : 0.15         // month and events fadeOut to this opacity
 	};
+        plugin.EventTypes = {
+            SINGLE : { value: 0, name: "single" },
+            MULTI  : { value: 1, name: "multi" }
+        };
+        if (Object.freeze) { Object.freeze(plugin.EventTypes); }
+
 
 }(jQuery));

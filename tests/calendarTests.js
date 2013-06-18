@@ -1,10 +1,10 @@
 // Initialisation Tests
 
-(function( $ ) {
+(function($) {
 
     var eventCalendar;
 
-    module( "EventCalendar: Initialisation", {
+    module("EventCalendar: Initialisation", {
         setup: function() {
             var eventsInline = [{ "date": "1337594400000", "type": "meeting", "title": "Project A meeting", "description": "Lorem Ipsum dolor set", "url": "http://www.event1.com/" }];
             $('#eventCalendarDefault').eventCalendar({
@@ -29,15 +29,15 @@
 		equal(eventCalendar.settings.currentDate.toString(), (new Date(2010, 11, 12, 13, 14, 15, 16)).toString(), "Date option passed in was used");
 	});
 
-}( jQuery ) );
+}(jQuery));
 
 // Date matching tests
 
-(function( $ ) {
+(function($) {
 
 	var eventCalendar;
 
-	module( "Date Matching", {
+	module("Date Matching", {
 		setup: function() {
 			var eventsInline = [{ "date": "1337594400000", "type": "meeting", "title": "Project A meeting", "description": "Lorem Ipsum dolor set", "url": "http://www.event1.com/" }];
 			$('#eventCalendarDefault').eventCalendar({
@@ -106,4 +106,35 @@
 		}, 2013, 03, 10), false, "Late date is not current for single date range");
 	});
 
-}( jQuery ) );
+}(jQuery));
+
+// Event type tests
+
+(function($) {
+
+	var eventCalendar;
+
+	module("Event Type Enum", {
+		setup: function() {
+			var eventsInline = [{ "date": "1337594400000", "type": "meeting", "title": "Project A meeting", "description": "Lorem Ipsum dolor set", "url": "http://www.event1.com/" }];
+			$('#eventCalendarDefault').eventCalendar({
+				currentDate : new Date(2010, 11, 12, 13, 14, 15, 16),
+				jsonData    : eventsInline
+			});
+			eventCalendar = $('#eventCalendarDefault').data('eventCalendar');
+		},
+		teardown: function() {
+		}
+	});
+
+	test("Event Type: Multi", function() {
+		var et = eventCalendar.EventTypes.MULTI;
+		equal(et.name, "multi", "Defined multi name is as expected");
+	});
+
+	test("Event Type: Single", function() {
+		var et = eventCalendar.EventTypes.SINGLE;
+		equal(et.name, "single", "Defined single name is as expected");
+	});
+
+}(jQuery));
