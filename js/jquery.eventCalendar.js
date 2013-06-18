@@ -11,7 +11,6 @@
         date        : event date either in timestamp format or 'YYYY-MM-DD HH:MM:SS'
         startDate   : event start date - used if event spans a number of days (defaults to date)
         endDate     : event end date - used if event spans a number of days (defaults to date)
-        type        : event type - used to generate a class for styling
         type        : (obsolete) event class - used to generate a class for styling
         class       : event class - used to generate a class for styling
         title       : event name - becomes the header line
@@ -250,11 +249,7 @@
                                     } else {
                                         var eventTitle = '<span class="eventTitle ' + eventTitleStyle + '">' + event.title + '</span>';
                                     }
-                                    var eventClass = event.class;
-                                    if (!eventClass || eventClass.length < 1) {
-                                        eventClass = event.type;
-                                    }
-                                    events.push('<li id="' + key + '" class="' + eventClass + '"><time datetime="' + event.eventDate + '"><em>' + eventStringDate + '</em><small>' + event.eventHour + ":" + event.eventMinute + '</small></time>' + eventTitle + '<div class="eventDesc ' + eventDescClass + '">' + event.description + '</div></li>');
+                                    events.push('<li id="' + key + '" class="' + event.class + '"><time datetime="' + event.eventDate + '"><em>' + eventStringDate + '</em><small>' + event.eventHour + ":" + event.eventMinute + '</small></time>' + eventTitle + '<div class="eventDesc ' + eventDescClass + '">' + event.description + '</div></li>');
                                     i++;
                                 }
                             }
@@ -404,6 +399,11 @@
         var fillMissingData = function(data) {
             if (data.length) {
                 $.each(data, function(key, event) {
+                    // Cater for obsolete type property
+                    if (!event.class || event.class.length < 1) {
+                        event.class = event.type;
+                    }
+
                     if (plugin.settings.jsonDateFormat == 'human') {
                         var eventDateTime = event.date.split(" ");
                         var eventDate = eventDateTime[0].split("-");
