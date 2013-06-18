@@ -20,27 +20,25 @@
 */
 
 ;(function($) {
+    "use strict";
 
     // Event Calendar Plugin
     $.eventCalendar = function(element, options) {
         var $element = $(element);
         var plugin = this;
-
         var directionLeftMove = "300";
         var eventsJson = {};
-
-        plugin.settings = {};
 
         /* ========================================== */
         /* The following still needs to be refactored */
         /* ========================================== */
 
         var dateSlider = function(show, year, month) {
-            var $eventsCalendarSlider = $("<div class='eventsCalendar-slider'></div>")
-            var $eventsCalendarMonthWrap = $("<div class='eventsCalendar-monthWrap'></div>")
-            var $eventsCalendarTitle = $("<div class='eventsCalendar-currentTitle'><a href='#' class='monthTitle'></a></div>")
+            var $eventsCalendarSlider = $("<div class='eventsCalendar-slider'></div>");
+            var $eventsCalendarMonthWrap = $("<div class='eventsCalendar-monthWrap'></div>");
+            var $eventsCalendarTitle = $("<div class='eventsCalendar-currentTitle'><a href='#' class='monthTitle'></a></div>");
             var $eventsCalendarArrows = $("<a href='#' class='arrow prev'><span>" + plugin.settings.txt_prev + "</span></a><a href='#' class='arrow next'><span>" + plugin.settings.txt_next + "</span></a>");
-            var $eventsCalendarDaysList = $("<ul class='eventsCalendar-daysList'></ul>")
+            var $eventsCalendarDaysList = $("<ul class='eventsCalendar-daysList'></ul>");
             var date = new Date();
             var day;
 
@@ -60,20 +58,19 @@
                 $eventsCalendarSlider.append($eventsCalendarArrows);
 
             } else {
-                date = new Date($element.attr('data-current-year'),$element.attr('data-current-month'),1,0,0,0); // current visible month
+                date = new Date($element.attr('data-current-year'), $element.attr('data-current-month'),1,0,0,0); // current visible month
                 day = 0; // not show current day in days list
 
                 var moveOfMonth = 1;
                 if (show === "prev") {
                     moveOfMonth = -1;
                 }
-                date.setMonth( date.getMonth() + moveOfMonth );
+                date.setMonth(date.getMonth() + moveOfMonth);
 
                 var tmpDate = new Date();
                 if (date.getMonth() === tmpDate.getMonth()) {
                     day = tmpDate.getDate();
                 }
-
             }
 
             // get date portions
@@ -100,11 +97,12 @@
             if (plugin.settings.showDayAsWeeks) {
                 $eventsCalendarDaysList.addClass('showAsWeek');
 
+                var i;
                 // show day name in top of calendar
                 if (plugin.settings.showDayNameInCalendar) {
                     $eventsCalendarDaysList.addClass('showDayNames');
 
-                    var i = 0;
+                    i = 0;
                     // if week start on monday
                     if (plugin.settings.startWeekOnMonday) {
                         i = 1;
@@ -164,13 +162,13 @@
                 // user send a json in the plugin params
                 plugin.settings.cacheJson = true;
 
-                eventsJson = fillMissingDateInformation(plugin.settings.jsonData);
+                eventsJson = fillMissingData(plugin.settings.jsonData);
                 getEventsData(eventsJson, limit, year, month, day, direction);
 
             } else if (!plugin.settings.cacheJson || !direction) {
                 // first load: load json and save it to future filters
                 $.getJSON(plugin.settings.eventsjson + "?limit="+limit+"&year="+year+"&month="+month+"&day="+day, function(data) {
-                    eventsJson = fillMissingDateInformation(data); // save data to future filters
+                    eventsJson = fillMissingData(data); // save data to future filters
                     getEventsData(eventsJson, limit, year, month, day, direction);
                 }).error(function() {
                         showError("error getting json: ");
@@ -184,7 +182,7 @@
             if (day > '') {
                 $element.find('#dayList_'+day).addClass('current');
             }
-        }
+        };
 
         var getEventsData = function(data, limit, year, month, day, direction){
             var directionLeftMove = "-=" + plugin.directionLeftMove;
@@ -288,7 +286,7 @@
                 }, plugin.settings.moveSpeed);
             });
             setCalendarWidth();
-        }
+        };
 
         var changeMonth = function() {
             $element.find('.arrow').click(function(e){
@@ -310,7 +308,7 @@
                     $element.find('.eventsCalendar-monthWrap.oldMonth').remove();
                 });
             });
-        }
+        };
 
         var sortJson = function(a, b){
             if (plugin.settings.sortAscending) {
@@ -318,21 +316,21 @@
             } else {
                 return a.date.toLowerCase() < b.date.toLowerCase() ? 1 : -1;
             }
-        }
+        };
 
         var num_abbrev_str = function(num) {
             var len = num.length;
-            var last_char = num.charAt(len - 1);
+            var lastChar = num.charAt(len - 1);
             var abbrev;
 
             if (len === 2 && num.charAt(0) === '1') {
                 abbrev = 'th';
             } else {
-                if (last_char === '1') {
+                if (lastChar === '1') {
                     abbrev = 'st';
-                } else if (last_char === '2') {
+                } else if (lastChar === '2') {
                     abbrev = 'nd';
-                } else if (last_char === '3') {
+                } else if (lastChar === '3') {
                     abbrev = 'rd';
                 } else {
                     abbrev = 'th';
@@ -340,7 +338,7 @@
             }
 
             return num + abbrev;
-        }
+        };
 
         var showError = function(msg) {
             $element.find('.eventsCalendar-list-wrap')
@@ -349,7 +347,7 @@
                     " " +
                     plugin.settings.eventsjson +
                     "</span>");
-        }
+        };
 
         /* ========================================== */
         /* The above still needs to be refactored     */
@@ -364,7 +362,7 @@
             if (year != "") {
                 start += startDate.getFullYear() * 10000;
                 end += endDate.getFullYear() * 10000;
-                dateToCheck += parseInt(year) * 10000;
+                dateToCheck += parseInt(year, 10) * 10000;
             }
 
             // Check Month
@@ -378,11 +376,19 @@
             if (day != "") {
                 start += startDate.getDate();
                 end += endDate.getDate();
-                dateToCheck += parseInt(day);
+                dateToCheck += parseInt(day, 10);
             }
 
             return ((dateToCheck >= start) && (dateToCheck <= end));
-        }
+        };
+
+        plugin.EventTypes = {
+            SINGLE : { value: 0, name: "single" },
+            MULTI  : { value: 1, name: "multi" }
+        };
+        if (Object.freeze) { Object.freeze(plugin.EventTypes); }
+
+        plugin.settings = {};
 
         plugin.eventIsToday = function (event, year, month, day) {
             var date = new Date(parseInt(event.date));
@@ -390,12 +396,12 @@
         };
 
         plugin.eventIsCurrent = function (event, year, month, day) {
-            var startDate = (event.startDate) ? new Date(parseInt(event.startDate)) : new Date(parseInt(event.date));
-            var endDate = (event.endDate) ? new Date(parseInt(event.endDate)) : new Date(parseInt(event.date));
+            var startDate = (event.startDate) ? new Date(parseInt(event.startDate, 10)) : new Date(parseInt(event.date, 10));
+            var endDate = (event.endDate) ? new Date(parseInt(event.endDate, 10)) : new Date(parseInt(event.date, 10));
             return eventIsWithinDateRange(startDate, endDate, year, month, day);
         };
 
-        var fillMissingDateInformation = function(data) {
+        var fillMissingData = function(data) {
             if (data.length) {
                 $.each(data, function(key, event) {
                     if (plugin.settings.jsonDateFormat == 'human') {
@@ -403,15 +409,15 @@
                         var eventDate = eventDateTime[0].split("-");
                         var eventTime = eventDateTime[1].split(":");
                         event.eventYear = eventDate[0];
-                        event.eventMonth = parseInt(eventDate[1]) - 1;
-                        event.eventDay = parseInt(eventDate[2]);
-                        event.eventMonthToShow = parseInt(event.eventMonth) + 1;
+                        event.eventMonth = parseInt(eventDate[1], 10) - 1;
+                        event.eventDay = parseInt(eventDate[2], 10);
+                        event.eventMonthToShow = parseInt(event.eventMonth, 10) + 1;
                         event.eventHour = eventTime[0];
                         event.eventMinute = eventTime[1];
                         event.eventSeconds = eventTime[2];
                         event.eventDate = new Date(event.eventYear, event.eventMonth, event.eventDay, event.eventHour, event.eventMinute, event.eventSeconds);
                     } else {
-                        var eventDate = new Date(parseInt(event.date));
+                        var eventDate = new Date(parseInt(theDate, 10));
                         event.eventDate = eventDate;
                         event.eventYear = eventDate.getFullYear();
                         event.eventMonth = eventDate.getMonth();
@@ -507,7 +513,7 @@
 
                         // create a button to go to event url
                         if (eventUrl && eventUrl.length > 0) {
-                            desc.append('<a href="' + eventUrl + '" target="'+eventTarget+'" class="bt">'+plugin.settings.txt_GoToEventUrl+'</a>')
+                            desc.append('<a href="' + eventUrl + '" target="'+eventTarget+'" class="bt">'+plugin.settings.txt_GoToEventUrl+'</a>');
                         }
                     }
 
@@ -532,7 +538,7 @@
             var element = $(this);
 
             // Return early if this element already has a plugin instance
-            if (element.data('eventCalendar')) return;
+            if (element.data('eventCalendar')) { return; }
 
             // pass options to plugin constructor
             var eventCalendar = new $.eventCalendar(this, options);
@@ -576,11 +582,5 @@
         moveSpeed                : 500,         // speed of month move when you click on a new date
         moveOpacity              : 0.15         // month and events fadeOut to this opacity
     };
-        plugin.EventTypes = {
-            SINGLE : { value: 0, name: "single" },
-            MULTI  : { value: 1, name: "multi" }
-        };
-        if (Object.freeze) { Object.freeze(plugin.EventTypes); }
-
 
 }(jQuery));
