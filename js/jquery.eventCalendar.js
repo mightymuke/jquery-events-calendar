@@ -43,6 +43,7 @@
             var $eventsCalendarDaysList = $("<ul class='eventsCalendar-daysList'></ul>");
             var date = new Date();
             var day;
+            var dayCount;
 
             if (!$element.find('.eventsCalendar-slider').size()) {
                 $element.prepend($eventsCalendarSlider);
@@ -263,9 +264,12 @@
                         if (event.eventType === plugin.EventTypes.MULTI.name) {
                             var dateToBeChecked = new Date(parseInt(event.startDate, 10));
                             var endDate = new Date(parseInt(event.endDate, 10));
+                            var currentYear = parseInt($element.attr('data-current-year'), 10);
+                            var currentMonth = parseInt($element.attr('data-current-month'), 10);
                             while (dateToBeChecked.compareTo(endDate) <=0) {
-                                // TODO - need to check month
-                                daysElement.find('#dayList_' + dateToBeChecked.getDate()).addClass('dayWithEvents');
+                                if (dateToBeChecked.getFullYear() === currentYear && dateToBeChecked.getMonth() === currentMonth) {
+                                    daysElement.find('#dayList_' + dateToBeChecked.getDate()).addClass('dayWithEvents');
+                                }
                                 dateToBeChecked.addDays(1);
                             }
                         } else if (plugin.eventIsCurrent(event, $element.attr('data-current-year'), $element.attr('data-current-month'), "")) {
