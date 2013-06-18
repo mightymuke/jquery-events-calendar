@@ -259,8 +259,17 @@
                         }
 
                         // add mark in the dayList to the days with events
-                        if (event.eventYear == $element.attr('data-current-year') && event.eventMonth == $element.attr('data-current-month')) {
-                            $element.find('.currentMonth .eventsCalendar-daysList #dayList_' + parseInt(event.eventDay)).addClass('dayWithEvents');
+                        var daysElement = $element.find('.currentMonth .eventsCalendar-daysList');
+                        if (event.eventType === plugin.EventTypes.MULTI.name) {
+                            var dateToBeChecked = new Date(parseInt(event.startDate, 10));
+                            var endDate = new Date(parseInt(event.endDate, 10));
+                            while (dateToBeChecked.compareTo(endDate) <=0) {
+                                // TODO - need to check month
+                                daysElement.find('#dayList_' + dateToBeChecked.getDate()).addClass('dayWithEvents');
+                                dateToBeChecked.addDays(1);
+                            }
+                        } else if (plugin.eventIsCurrent(event, $element.attr('data-current-year'), $element.attr('data-current-month'), "")) {
+                            daysElement.find('#dayList_' + parseInt(event.eventDay, 10)).addClass('dayWithEvents');
                         }
 
                     });
@@ -309,10 +318,12 @@
         };
 
         var sortJson = function(a, b){
+            var aDate = (a.eventType === plugin.EventTypes.MULTI.name) ? a.startDate : a.date;
+            var bDate = (b.eventType === plugin.EventTypes.MULTI.name) ? b.startDate : b.date;
             if (plugin.settings.sortAscending) {
-                return a.date.toLowerCase() > b.date.toLowerCase() ? 1 : -1;
+                return aDate.toLowerCase() > bDate.toLowerCase() ? 1 : -1;
             } else {
-                return a.date.toLowerCase() < b.date.toLowerCase() ? 1 : -1;
+                return aDate.toLowerCase() < bDate.toLowerCase() ? 1 : -1;
             }
         };
 
@@ -389,8 +400,9 @@
         plugin.settings = {};
 
         plugin.eventIsToday = function (event, year, month, day) {
-            var date = new Date(parseInt(event.date));
-            return eventIsWithinDateRange(date, date, year, month, day);
+            var startDate = (event.eventType === plugin.EventTypes.MULTI.name) ? new Date(parseInt(event.startDate, 10)) : new Date(parseInt(event.date, 10));
+            var endDate = (event.eventType === plugin.EventTypes.MULTI.name) ? new Date(parseInt(event.endDate, 10)) : new Date(parseInt(event.date, 10));
+            return eventIsWithinDateRange(startDate, endDate, year, month, day);
         };
 
         plugin.eventIsCurrent = function (event, year, month, day) {
@@ -414,8 +426,21 @@
                         event.class = event.type;
                     }
 
+                    // Fix date ranges
+                    if (event.eventType == plugin.EventTypes.MULTI.name) {
+                        if (!event.endDate) event.endDate = event.startDate;
+                    } else {
+                        if (!event.startDate) event.startDate = event.date;
+                        if (!event.endDate) event.endDate = event.date;
+                    }
+
+                    // TODO - fix this. Should look at removing this processing
+                    var theDate = event.date;
+                    if (!theDate || theDate.length < 1) {
+                        theDate = event.startDate;
+                    }
                     if (plugin.settings.jsonDateFormat == 'human') {
-                        var eventDateTime = event.date.split(" ");
+                        var eventDateTime = theDate.split(" ");
                         var eventDate = eventDateTime[0].split("-");
                         var eventTime = eventDateTime[1].split(":");
                         event.eventYear = eventDate[0];
@@ -424,8 +449,7 @@
                         event.eventMonthToShow = parseInt(event.eventMonth, 10) + 1;
                         event.eventHour = eventTime[0];
                         event.eventMinute = eventTime[1];
-                        event.eventSeconds = eventTime[2];
-                        event.eventDate = new Date(event.eventYear, event.eventMonth, event.eventDay, event.eventHour, event.eventMinute, event.eventSeconds);
+                        event.eventDate = new Date(event.eventYear, event.eventMonth, event.eventDay, event.eventHour, event.eventMinute, 0);
                     } else {
                         var eventDate = new Date(parseInt(theDate, 10));
                         event.eventDate = eventDate;
@@ -435,10 +459,9 @@
                         event.eventMonthToShow = event.eventMonth + 1;
                         event.eventHour = eventDate.getHours();
                         event.eventMinute = eventDate.getMinutes();
-                        event.eventSeconts = eventDate.getSeconds();
                     }
-                    if (parseInt(event.eventMinute) <= 9) {
-                        event.eventMinute = "0" + parseInt(event.eventMinute);
+                    if (parseInt(event.eventMinute, 10) <= 9) {
+                        event.eventMinute = "0" + parseInt(event.eventMinute, 10);
                     }
                 });
             }
