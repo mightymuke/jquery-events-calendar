@@ -11,6 +11,9 @@
         date        : event date either in timestamp format or 'YYYY-MM-DD HH:MM:SS'
         startDate   : event start date - used if event spans a number of days (defaults to date)
         endDate     : event end date - used if event spans a number of days (defaults to date)
+        eventType   : single - event is on date. (default)
+                               event is listed from startDate to endDate. If either are empty, date is used
+                    : multi  - event lasts from startDate to endDate. If either are empty, date is used
         type        : (obsolete) event class - used to generate a class for styling
         class       : event class - used to generate a class for styling
         title       : event name - becomes the header line
@@ -399,6 +402,13 @@
         var fillMissingData = function(data) {
             if (data.length) {
                 $.each(data, function(key, event) {
+                    // Set the event type
+                    if (!event.eventType || event.eventType.length < 1) {
+                        event.eventType = plugin.EventTypes.SINGLE.name;
+                    } else {
+                        event.eventType = event.eventType.toLowerCase();
+                    }
+
                     // Cater for obsolete type property
                     if (!event.class || event.class.length < 1) {
                         event.class = event.type;
