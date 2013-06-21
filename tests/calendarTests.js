@@ -22,7 +22,7 @@
     });
 
 	test("Settings are defaulted", function() {
-		equal(eventCalendar.settings.txt_GoToEventUrl, "See the event", "Default option passed in was used");
+		equal(eventCalendar.settings.textGoToEventUrl, "See the event", "Default option passed in was used");
 	});
 
 	test("Settings can be passed in", function() {

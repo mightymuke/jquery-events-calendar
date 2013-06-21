@@ -39,7 +39,7 @@
             var $eventsCalendarSlider = $("<div class='eventsCalendar-slider'></div>");
             var $eventsCalendarMonthWrap = $("<div class='eventsCalendar-monthWrap'></div>");
             var $eventsCalendarTitle = $("<div class='eventsCalendar-currentTitle'><a href='#' class='monthTitle'></a></div>");
-            var $eventsCalendarArrows = $("<a href='#' class='arrow prev'><span>" + plugin.settings.txt_prev + "</span></a><a href='#' class='arrow next'><span>" + plugin.settings.txt_next + "</span></a>");
+            var $eventsCalendarArrows = $("<a href='#' class='arrow prev'><span>" + plugin.settings.textPrevious + "</span></a><a href='#' class='arrow next'><span>" + plugin.settings.textNext + "</span></a>");
             var $eventsCalendarDaysList = $("<ul class='eventsCalendar-daysList'></ul>");
             var date = new Date();
             var day;
@@ -194,14 +194,14 @@
             var subtitle = $element.find('.eventsCalendar-list-wrap .eventsCalendar-subtitle')
             if (!direction) {
                 // first load
-                subtitle.html(plugin.settings.txt_NextEvents);
+                subtitle.html(plugin.settings.textNextEvents);
                 eventContentHeight = "auto";
                 directionLeftMove = "-=0";
             } else {
                 if (day != '') {
-                    subtitle.html(plugin.settings.txt_SpecificEvents_prev + plugin.settings.monthNames[month] + " " + num_abbrev_str(day) + " " + plugin.settings.txt_SpecificEvents_after);
+                    subtitle.html(plugin.settings.textEventHeaderPrefix + plugin.settings.monthNames[month] + " " + num_abbrev_str(day) + " " + plugin.settings.textEventHeaderSuffix);
                 } else {
-                    subtitle.html(plugin.settings.txt_SpecificEvents_prev + plugin.settings.monthNames[month] + " " + plugin.settings.txt_SpecificEvents_after);
+                    subtitle.html(plugin.settings.textEventHeaderPrefix + plugin.settings.monthNames[month] + " " + plugin.settings.textEventHeaderSuffix);
                 }
 
                 if (direction === 'prev') {
@@ -281,7 +281,7 @@
 
                 // there is no events on this period
                 if (!events.length) {
-                    events.push('<li class="eventsCalendar-noEvents"><p>' + plugin.settings.txt_noEvents + '</p></li>');
+                    events.push('<li class="eventsCalendar-noEvents"><p>' + plugin.settings.textNoEvents + '</p></li>');
                 }
                 $element.find('.eventsCalendar-loading').hide();
 
@@ -550,7 +550,7 @@
 
                         // create a button to go to event url
                         if (eventUrl && eventUrl.length > 0) {
-                            desc.append('<a href="' + eventUrl + '" target="'+eventTarget+'" class="bt">'+plugin.settings.txt_GoToEventUrl+'</a>');
+                            desc.append('<a href="' + eventUrl + '" target="'+eventTarget+'" class="bt">'+plugin.settings.textGoToEventUrl+'</a>');
                         }
                     }
 
@@ -599,13 +599,13 @@
         dayNames                 : [ "Sunday", "Monday", "Tuesday", "Wednesday",
                                      "Thursday", "Friday", "Saturday" ],
         dayNamesShort            : [ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" ],
-        txt_noEvents             : "There are no events in this period",
-        txt_SpecificEvents_prev  : "",
-        txt_SpecificEvents_after : "events:",
-        txt_next                 : "next",
-        txt_prev                 : "prev",
-        txt_NextEvents           : "Next events:",
-        txt_GoToEventUrl         : "See the event",
+        textEventHeaderPrefix    : "",
+        textEventHeaderSuffix    : "events:",
+        textNoEvents             : "There are no events in this period",
+        textNext                 : "next",
+        textPrevious             : "prev",
+        textNextEvents           : "Next events:",
+        textGoToEventUrl         : "See the event",
         showDayAsWeeks           : true,
         startWeekOnMonday        : true,
         showDayNameInCalendar    : true,
