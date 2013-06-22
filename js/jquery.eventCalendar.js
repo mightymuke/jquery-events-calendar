@@ -1,11 +1,8 @@
-/*!
-    jquery.eventCalendar.js
-    version: 0.54
-    date: 18-04-2013
-    author:
-        Jaime Fernandez (@vissit)
-    company:
-        Paradigma Tecnologico (@paradigmate)
+/*! @license: jquery.eventCalendar.js
+    @author:  Jaime Fernandez (@vissit)
+    @company: Paradigma Tecnologico (@paradigmate)
+    @version: 0.54
+    @date:    18-04-2013
 
     JSON data format:
         date        : event date either in timestamp format or 'YYYY-MM-DD HH:MM:SS'
