@@ -1,4 +1,4 @@
-/*
+/*!
     jquery.eventCalendar.js
     version: 0.54
     date: 18-04-2013
@@ -15,7 +15,7 @@
                                event is listed from startDate to endDate. If either are empty, date is used
                     : multi  - event lasts from startDate to endDate. If either are empty, date is used
         type        : (obsolete) event class - used to generate a class for styling
-        class       : event class - used to generate a class for styling
+        classDetail : event class - used to generate a class for styling
         title       : event name - becomes the header line
         description : event description - becomes the detail (optionally hidden)
         url         : url of page containing event details
@@ -253,7 +253,7 @@
                                     } else {
                                         var eventTitle = '<span class="eventTitle ' + eventTitleStyle + '">' + event.title + '</span>';
                                     }
-                                    events.push('<li id="' + key + '" class="' + event.class + '"><time datetime="' + event.eventDate + '"><em>' + eventStringDate + '</em><small>' + event.eventHour + ":" + event.eventMinute + '</small></time>' + eventTitle + '<div class="eventDesc ' + eventDescClass + '">' + event.description + '</div></li>');
+                                    events.push('<li id="' + key + '" class="' + event.classDetail + '"><time datetime="' + event.eventDate + '"><em>' + eventStringDate + '</em><small>' + event.eventHour + ":" + event.eventMinute + '</small></time>' + eventTitle + '<div class="eventDesc ' + eventDescClass + '">' + event.description + '</div></li>');
                                     i++;
                                 }
                             }
@@ -426,8 +426,8 @@
                     }
 
                     // Cater for obsolete type property
-                    if (!event.class || event.class.length < 1) {
-                        event.class = event.type;
+                    if (!event.classDetail || event.classDetail.length < 1) {
+                        event.classDetail = event.type;
                     }
 
                     // Fix date ranges
