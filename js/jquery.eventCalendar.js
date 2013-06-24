@@ -3,7 +3,9 @@
     @company: Paradigma Tecnologico (@paradigmate)
     @version: 0.54
     @date:    18-04-2013
+*/
 
+/*
     JSON data format:
         date        : event date either in timestamp format or 'YYYY-MM-DD HH:MM:SS'
         startDate   : event start date - used if event spans a number of days (defaults to date)
@@ -11,7 +13,18 @@
         eventType   : single - event is on date. (default)
                                event is listed from startDate to endDate. If either are empty, date is used
                     : multi  - event lasts from startDate to endDate. If either are empty, date is used
-        type        : (obsolete) event class - used to generate a class for styling
+        recur       : event recurring type
+                    : - JSON format:
+                    :     type - the type of repetition: 'day', 'week', 'month', 'year'
+                    :     interval - the interval between events in the "type" units
+                    :     day and count2 - define a day of a month (first Monday, third Friday, etc)
+                    :     frequency - an array of week days (Sunday is 0)
+                    :     end - when the recurrence should end - either 'none' (default), number of times, or a date
+                    : - Examples of the rec_type data:
+                    :     { type: 'day', interval: 3 } - every three days
+                    :     { type: 'month', interval: 2 } - every two months
+                    :     { type: 'month', interval: 1, ???? _1_2_ - second Monday of each month
+                    :     { type: 'week', interval: 2, frequency: [1,5] } - Monday and Friday of each second week
         classDetail : event class - used to generate a class for styling
         title       : event name - becomes the header line
         description : event description - becomes the detail (optionally hidden)
@@ -580,6 +593,45 @@
             // Store plugin object in this element's data
             element.data('eventCalendar', eventCalendar);
         });
+    };
+
+    $.fn.eventCalendar.eventRecurrence = function(recurrence) {
+        var eventRecurrence = this;
+
+        //    :     day and count2 - define a day of a month (first Monday, third Friday, etc)
+        //:     frequency - an array of week days (Sunday is 0)
+        //:     end - when the recurrence should end - either 'none' (default), number of times, or a date
+
+        var setRecurrenceToNone = function() {
+            eventRecurrence.type = 'none';
+            eventRecurrence.interval = 0;
+        };
+
+        var recurrenceError = function() {
+            setRecurrenceToNone();
+        };
+
+        var _initialise = function() {
+            setRecurrenceToNone();
+            if ((!recurrence) || (!recurrence.type)) return;
+            var recurType = recurrence.type.toLowerCase();
+            if (recurType === 'none') return;
+            if ($.inArray(recurType, ['day', 'week', 'month', 'year']) < 0) {
+                recurrenceError();
+                return;
+            }
+
+            eventRecurrence.type = recurType;
+            eventRecurrence.interval = (recurrence.interval) ? parseInt(recurrence.interval, 10) : 0;
+            if ((!eventRecurrence.interval) || (eventRecurrence.interval < 1)) {
+                recurrenceError();
+                return;
+            }
+        };
+
+        _initialise();
+
+        return this;
     };
 
     // Define the parameters with the default values of the function
