@@ -197,7 +197,50 @@
             }
         };
 
-        var getEventsData = function(data, limit, year, month, day, direction){
+        plugin.highlightMultiDayEvents = function (event, highlighter) {
+            var dateToBeChecked = new Date(parseInt(event.startDate, 10));
+            var endDate = new Date(parseInt(event.endDate, 10));
+            var currentYear = parseInt($element.attr('data-current-year'), 10);
+            var currentMonth = parseInt($element.attr('data-current-month'), 10);
+            while (dateToBeChecked.compareTo(endDate) <= 0) {
+                if (dateToBeChecked.getFullYear() === currentYear && dateToBeChecked.getMonth() === currentMonth) {
+                    highlighter(dateToBeChecked.getDate());
+                }
+                dateToBeChecked.addDays(1);
+            }
+        };
+
+        plugin.highlightSingleDayEvents = function (event, highlighter) {
+            var currentYear = $element.attr('data-current-year');
+            var currentMonth = $element.attr('data-current-month');
+            if (plugin.eventIsCurrent(event, currentYear, currentMonth, "")) {
+                highlighter(parseInt(event.eventDay, 10));
+            }
+        };
+
+        plugin.highlightCalenderDays = function(event, highlighter) {
+            if ((!event) || (!highlighter)) return;
+
+            var recur = (event.recur) ? event.recur.split("_") : [];
+            //var recurType = recur[0];
+            //var recurCout = recur[1];
+            //var
+            //" - format: [type]_[count]_[day]_[count2]_[days]#[extra]
+            //:     type - the type of repetition: 'day','week','month','year'.
+            //:     count - the interval between events in the “type” units.
+            //:     day and count2 - define a day of a month ( first Monday, third Friday, etc ).
+            //:     days - the comma-separated list of affected week days.
+            //:     extra - the extra info that can be used to change presentation of recurring details.
+            //var maxRecur = (event.recur) ? event.recur : plugin.settings.eventsMaxRecur;
+
+            if (event.eventType === plugin.EventTypes.MULTI.name) {
+                plugin.highlightMultiDayEvents(event, highlighter);
+            } else {
+                plugin.highlightSingleDayEvents(event, highlighter);
+            }
+        };
+
+        var getEventsData = function(data, limit, year, month, day, direction) {
             var directionLeftMove = "-=" + plugin.directionLeftMove;
             var eventContentHeight = "auto";
 
@@ -268,24 +311,9 @@
                                 }
                             }
                         }
-
-                        // add mark in the dayList to the days with events
-                        var daysElement = $element.find('.currentMonth .eventsCalendar-daysList');
-                        if (event.eventType === plugin.EventTypes.MULTI.name) {
-                            var dateToBeChecked = new Date(parseInt(event.startDate, 10));
-                            var endDate = new Date(parseInt(event.endDate, 10));
-                            var currentYear = parseInt($element.attr('data-current-year'), 10);
-                            var currentMonth = parseInt($element.attr('data-current-month'), 10);
-                            while (dateToBeChecked.compareTo(endDate) <=0) {
-                                if (dateToBeChecked.getFullYear() === currentYear && dateToBeChecked.getMonth() === currentMonth) {
-                                    daysElement.find('#dayList_' + dateToBeChecked.getDate()).addClass('dayWithEvents');
-                                }
-                                dateToBeChecked.addDays(1);
-                            }
-                        } else if (plugin.eventIsCurrent(event, $element.attr('data-current-year'), $element.attr('data-current-month'), "")) {
-                            daysElement.find('#dayList_' + parseInt(event.eventDay, 10)).addClass('dayWithEvents');
-                        }
-
+                        plugin.highlightCalenderDays(event, function(dayOfMonth) {
+                            $element.find('.currentMonth .eventsCalendar-daysList #dayList_' + dayOfMonth).addClass('dayWithEvents');
+                        });
                     });
                 }
 
