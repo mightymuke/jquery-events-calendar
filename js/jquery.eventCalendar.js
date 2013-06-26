@@ -13,7 +13,7 @@
         eventType   : single - event is on date. (default)
                                event is listed from startDate to endDate. If either are empty, date is used
                     : multi  - event lasts from startDate to endDate. If either are empty, date is used
-        recur       : event recurring type
+        recurrence  : event recurring type
                     : - JSON format:
                     :     type - the type of repetition: 'day', 'week', 'month', 'year'
                     :     interval - the interval between events in the "type" units
@@ -33,6 +33,145 @@
 
 ;(function($) {
     "use strict";
+
+    $.eventRecurrence = function(recurrence, onError) {
+        var eventRecurrence = this;
+        var error = false;
+
+        //    :     day and count2 - define a day of a month (first Monday, third Friday, etc)
+        //:     frequency - an array of week days (Sunday is 0)
+        //:     end - when the recurrence should end - either 'none' (default), number of times, or a date
+
+        var setRecurrenceToNone = function() {
+            eventRecurrence.type = 'none';
+            eventRecurrence.interval = 0;
+        };
+
+        var recurrenceError = function(msg) {
+            if (msg && onError) onError(msg);
+            setRecurrenceToNone();
+            error = true;
+        };
+
+        var _initialise = function() {
+            setRecurrenceToNone();
+            if ((!recurrence) || (!recurrence.type)) {
+                recurrenceError("No recurrence data provided");
+                return;
+            }
+
+            var recurType = recurrence.type.toLowerCase();
+            if (recurType === 'none') return;
+            if ($.inArray(recurType, ['day', 'week', 'month', 'year']) < 0) {
+                recurrenceError("Invalid recurrence type: " + recurType);
+                return;
+            }
+
+            eventRecurrence.type = recurType;
+            eventRecurrence.interval = (recurrence.interval) ? parseInt(recurrence.interval, 10) : 0;
+            if ((!eventRecurrence.interval) || (eventRecurrence.interval < 1)) {
+                recurrenceError("Invalid recurrence interval: " + eventRecurrence.interval);
+                return;
+            }
+        };
+
+        _initialise();
+    };
+
+    $.eventItem = function(event, onError) {
+        var eventItem = this;
+        var index = 0;
+        var error = false;
+
+        var _getEvent = function(index) {
+            if (index < 0) return null;
+            if ((index > 0) && ((!eventItem.recurrence) || (eventItem.recurrence.type === 'none'))) {
+                return null;
+            }
+
+            var eventDate = new Date(eventItem.date);
+            var eventStartDate = new Date(eventItem.startDate);
+            var eventEndDate = new Date(eventItem.endDate);
+            var i = 0;
+            while (i < index) {
+                switch (eventItem.recurrence.type) {
+                case 'day':
+                    eventDate = eventDate ? eventDate.addDays(eventItem.recurrence.interval) : null;
+                    eventStartDate = eventStartDate ? eventStartDate.addDays(eventItem.recurrence.interval) : null;
+                    eventEndDate = eventEndDate ? eventEndDate.addDays(eventItem.recurrence.interval) : null;
+                    break;
+                case 'week':
+                    eventDate = eventDate ? eventDate.addWeeks(eventItem.recurrence.interval) : null;
+                    eventStartDate = eventStartDate ? eventStartDate.addWeeks(eventItem.recurrence.interval) : null;
+                    eventEndDate = eventEndDate ? eventEndDate.addWeeks(eventItem.recurrence.interval) : null;
+                    break;
+                case 'month':
+                    eventDate = eventDate ? eventDate.addMonths(eventItem.recurrence.interval) : null;
+                    eventStartDate = eventStartDate ? eventStartDate.addMonths(eventItem.recurrence.interval) : null;
+                    eventEndDate = eventEndDate ? eventEndDate.addMonths(eventItem.recurrence.interval) : null;
+                    break;
+                case 'year':
+                    eventDate = eventDate ? eventDate.addYears(eventItem.recurrence.interval) : null;
+                    eventStartDate = eventStartDate ? eventStartDate.addYears(eventItem.recurrence.interval) : null;
+                    eventEndDate = eventEndDate ? eventEndDate.addYears(eventItem.recurrence.interval) : null;
+                    break;
+                }
+                i += 1;
+            }
+
+            return {
+                eventType : eventItem.type,
+                date      : eventDate,
+                startDate : eventStartDate,
+                endDate   : eventEndDate,
+                eventDay  : eventStartDate.getDate()
+            };
+        };
+
+        var setEventToNone = function() {
+            eventItem.type = 'none';
+            eventItem.recurrence = null;
+        };
+
+        var eventItemError = function(msg) {
+            if (msg && onError) onError(msg);
+            setEventToNone();
+            error = true;
+        };
+
+        var _initialise = function() {
+            setEventToNone();
+            if (!event) {
+                eventItemError("No event data provided");
+                return;
+            }
+
+            var eventType = event.eventType ? event.eventType.toLowerCase() : 'single';
+            if ($.inArray(eventType, ['single', 'multi']) < 0) {
+                eventItemError("Invalid event type: " + eventType);
+                return;
+            }
+
+            eventItem.type = eventType;
+            eventItem.recurrence = new $.eventRecurrence(event.recurrence);
+            eventItem.date = event.date ? new Date(parseInt(event.date, 10)) : null;
+            eventItem.startDate = event.startDate ? new Date(parseInt(event.startDate, 10)) : null;
+            eventItem.endDate = event.endDate ? new Date(parseInt(event.endDate, 10)) : null;
+            eventItem.eventDay = event.eventDay;
+        };
+
+        eventItem.getFirstEvent = function() {
+            index = 0;
+            return _getEvent(0);
+        };
+
+        eventItem.getNextEvent = function(maxTimesToRecur) {
+            index += 1;
+            return (index >= maxTimesToRecur) ? null : _getEvent(index);
+        };
+
+        _initialise();
+    };
 
     // Event Calendar Plugin
     $.eventCalendar = function(element, options) {
@@ -197,9 +336,9 @@
             }
         };
 
-        plugin.highlightMultiDayEvents = function (event, highlighter) {
-            var dateToBeChecked = new Date(parseInt(event.startDate, 10));
-            var endDate = new Date(parseInt(event.endDate, 10));
+        plugin.highlightMultiDayEvents = function (eventDetails, highlighter) {
+            var dateToBeChecked = new Date(eventDetails.startDate);
+            var endDate = new Date(eventDetails.endDate);
             var currentYear = parseInt($element.attr('data-current-year'), 10);
             var currentMonth = parseInt($element.attr('data-current-month'), 10);
             while (dateToBeChecked.compareTo(endDate) <= 0) {
@@ -210,33 +349,27 @@
             }
         };
 
-        plugin.highlightSingleDayEvents = function (event, highlighter) {
+        plugin.highlightSingleDayEvents = function (eventDetails, highlighter) {
             var currentYear = $element.attr('data-current-year');
             var currentMonth = $element.attr('data-current-month');
-            if (plugin.eventIsToday(event, currentYear, currentMonth, "")) {
-                highlighter(parseInt(event.eventDay, 10));
+            if (plugin.eventIsToday(eventDetails, currentYear, currentMonth, "")) {
+                highlighter(parseInt(eventDetails.eventDay, 10));
             }
         };
 
         plugin.highlightCalenderDays = function(event, highlighter) {
             if ((!event) || (!highlighter)) return;
 
-            var recur = (event.recur) ? event.recur.split("_") : [];
-            //var recurType = recur[0];
-            //var recurCout = recur[1];
-            //var
-            //" - format: [type]_[count]_[day]_[count2]_[days]#[extra]
-            //:     type - the type of repetition: 'day','week','month','year'.
-            //:     count - the interval between events in the “type” units.
-            //:     day and count2 - define a day of a month ( first Monday, third Friday, etc ).
-            //:     days - the comma-separated list of affected week days.
-            //:     extra - the extra info that can be used to change presentation of recurring details.
-            //var maxRecur = (event.recur) ? event.recur : plugin.settings.eventsMaxRecur;
+            var eventItem = new $.eventItem(event);
 
-            if (event.eventType === plugin.EventTypes.MULTI.name) {
-                plugin.highlightMultiDayEvents(event, highlighter);
-            } else {
-                plugin.highlightSingleDayEvents(event, highlighter);
+            var eventDetails = eventItem.getFirstEvent();
+            while (eventDetails) {
+                if (eventDetails.eventType === plugin.EventTypes.MULTI.name) {
+                    plugin.highlightMultiDayEvents(eventDetails, highlighter);
+                } else {
+                    plugin.highlightSingleDayEvents(eventDetails, highlighter);
+                }
+                eventDetails = eventItem.getNextEvent(plugin.settings.defaultRecurTimes);
             }
         };
 
@@ -442,14 +575,18 @@
         plugin.settings = {};
 
         plugin.eventIsToday = function (event, year, month, day) {
-            var startDate = (event.eventType === plugin.EventTypes.MULTI.name) ? new Date(parseInt(event.startDate, 10)) : new Date(parseInt(event.date, 10));
-            var endDate = (event.eventType === plugin.EventTypes.MULTI.name) ? new Date(parseInt(event.endDate, 10)) : new Date(parseInt(event.date, 10));
+            var startDate = (event.eventType === plugin.EventTypes.MULTI.name) ? event.startDate : event.date;
+            if (!startDate.getMonth) startDate = new Date(parseInt(startDate, 10));
+            var endDate = (event.eventType === plugin.EventTypes.MULTI.name) ? event.endDate : event.date;
+            if (!endDate.getMonth) endDate = new Date(parseInt(endDate, 10));
             return eventIsWithinDateRange(startDate, endDate, year, month, day);
         };
 
         plugin.eventIsCurrent = function (event, year, month, day) {
-            var startDate = (event.startDate) ? new Date(parseInt(event.startDate, 10)) : new Date(parseInt(event.date, 10));
-            var endDate = (event.endDate) ? new Date(parseInt(event.endDate, 10)) : new Date(parseInt(event.date, 10));
+            var startDate = event.startDate ? event.startDate : event.date;
+            if (!startDate.getMonth) startDate = new Date(parseInt(startDate, 10));
+            var endDate = event.endDate ? event.endDate : event.date;
+            if (!endDate.getMonth) endDate = new Date(parseInt(endDate, 10));
             return eventIsWithinDateRange(startDate, endDate, year, month, day);
         };
 
@@ -623,45 +760,6 @@
         });
     };
 
-    $.fn.eventCalendar.eventRecurrence = function(recurrence) {
-        var eventRecurrence = this;
-
-        //    :     day and count2 - define a day of a month (first Monday, third Friday, etc)
-        //:     frequency - an array of week days (Sunday is 0)
-        //:     end - when the recurrence should end - either 'none' (default), number of times, or a date
-
-        var setRecurrenceToNone = function() {
-            eventRecurrence.type = 'none';
-            eventRecurrence.interval = 0;
-        };
-
-        var recurrenceError = function() {
-            setRecurrenceToNone();
-        };
-
-        var _initialise = function() {
-            setRecurrenceToNone();
-            if ((!recurrence) || (!recurrence.type)) return;
-            var recurType = recurrence.type.toLowerCase();
-            if (recurType === 'none') return;
-            if ($.inArray(recurType, ['day', 'week', 'month', 'year']) < 0) {
-                recurrenceError();
-                return;
-            }
-
-            eventRecurrence.type = recurType;
-            eventRecurrence.interval = (recurrence.interval) ? parseInt(recurrence.interval, 10) : 0;
-            if ((!eventRecurrence.interval) || (eventRecurrence.interval < 1)) {
-                recurrenceError();
-                return;
-            }
-        };
-
-        _initialise();
-
-        return this;
-    };
-
     // Define the parameters with the default values of the function
     $.fn.eventCalendar.defaults = {
         eventsJson               : "js/events.json",
@@ -671,6 +769,7 @@
                                                 // if false plugin get a new json on each date change
         sortAscending            : true,        // false to sort descending
         eventsLimit              : 4,
+        defaultRecurTimes        : 3,           // default times to show recurring item
         monthNames               : [ "January", "February", "March", "April", "May", "June",
                                      "July", "August", "September", "October", "November", "December" ],
         dayNames                 : [ "Sunday", "Monday", "Tuesday", "Wednesday",
