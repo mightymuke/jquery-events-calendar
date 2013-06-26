@@ -213,7 +213,7 @@
         plugin.highlightSingleDayEvents = function (event, highlighter) {
             var currentYear = $element.attr('data-current-year');
             var currentMonth = $element.attr('data-current-month');
-            if (plugin.eventIsCurrent(event, currentYear, currentMonth, "")) {
+            if (plugin.eventIsToday(event, currentYear, currentMonth, "")) {
                 highlighter(parseInt(event.eventDay, 10));
             }
         };
