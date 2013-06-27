@@ -237,11 +237,12 @@
             }
 
             $element
-                .attr('data-current-month',month)
-                .attr('data-current-year',year);
+                .attr('data-current-month', month)
+                .attr('data-current-year', year);
 
             // add current date info
-            $eventsCalendarTitle.find('.monthTitle').html(plugin.settings.monthNames[month] + " " + year);
+            var displayDate = new Date(year, month, day, 0, 0, 0);
+            $eventsCalendarTitle.find('.monthTitle').html(displayDate.toString(plugin.settings.textCalendarTitle));
 
             // print all month days
             var daysOnTheMonth = 32 - new Date(year, month, 32).getDate();
@@ -254,18 +255,12 @@
                 if (plugin.settings.showDayNameInCalendar) {
                     $eventsCalendarDaysList.addClass('showDayNames');
 
-                    i = 0;
-                    // if week start on monday
-                    if (plugin.settings.startWeekOnMonday) {
-                        i = 1;
-                    }
-
-                    for (; i < 7; i++) {
-                        daysList.push('<li class="eventsCalendar-day-header">'+plugin.settings.dayNamesShort[i]+'</li>');
+                    for (i = plugin.settings.startWeekOnMonday ? 1 : 0; i < 7; i += 1) {
+                        daysList.push('<li class="eventsCalendar-day-header">' + plugin.settings.dayNamesShort[i] + '</li>');
 
                         if (i === 6 && plugin.settings.startWeekOnMonday) {
                             // print sunday header
-                            daysList.push('<li class="eventsCalendar-day-header">'+plugin.settings.dayNamesShort[0]+'</li>');
+                            daysList.push('<li class="eventsCalendar-day-header">' + plugin.settings.dayNamesShort[0] + '</li>');
                         }
 
                     }
@@ -384,11 +379,9 @@
                 eventContentHeight = "auto";
                 directionLeftMove = "-=0";
             } else {
-                if (day != '') {
-                    subtitle.html(plugin.settings.textEventHeaderPrefix + plugin.settings.monthNames[month] + " " + num_abbrev_str(day) + " " + plugin.settings.textEventHeaderSuffix);
-                } else {
-                    subtitle.html(plugin.settings.textEventHeaderPrefix + plugin.settings.monthNames[month] + " " + plugin.settings.textEventHeaderSuffix);
-                }
+                var displayDate = new Date(year, month, day, 0, 0, 0);
+                var headerText = (day !== '') ? displayDate.toString(plugin.settings.textEventHeaderDayView) : displayDate.toString(plugin.settings.textEventHeaderMonthView);
+                subtitle.html(headerText);
 
                 if (direction === 'prev') {
                     directionLeftMove = "+=" + plugin.directionLeftMove;
@@ -500,28 +493,6 @@
             } else {
                 return aDate.toLowerCase() < bDate.toLowerCase() ? 1 : -1;
             }
-        };
-
-        var num_abbrev_str = function(num) {
-            var len = num.length;
-            var lastChar = num.charAt(len - 1);
-            var abbrev;
-
-            if (len === 2 && num.charAt(0) === '1') {
-                abbrev = 'th';
-            } else {
-                if (lastChar === '1') {
-                    abbrev = 'st';
-                } else if (lastChar === '2') {
-                    abbrev = 'nd';
-                } else if (lastChar === '3') {
-                    abbrev = 'rd';
-                } else {
-                    abbrev = 'th';
-                }
-            }
-
-            return num + abbrev;
         };
 
         var showError = function(msg) {
@@ -770,13 +741,10 @@
         sortAscending            : true,        // false to sort descending
         eventsLimit              : 4,
         defaultRecurTimes        : 3,           // default times to show recurring item
-        monthNames               : [ "January", "February", "March", "April", "May", "June",
-                                     "July", "August", "September", "October", "November", "December" ],
-        dayNames                 : [ "Sunday", "Monday", "Tuesday", "Wednesday",
-                                     "Thursday", "Friday", "Saturday" ],
         dayNamesShort            : [ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" ],
-        textEventHeaderPrefix    : "",
-        textEventHeaderSuffix    : "events:",
+        textCalendarTitle        : "MMMM yyyy",
+        textEventHeaderDayView   : "MMMM ddS even\\t\\s:",
+        textEventHeaderMonthView : "MMMM even\\t\\s:",
         textNoEvents             : "There are no events in this period",
         textNext                 : "next",
         textPrevious             : "prev",
