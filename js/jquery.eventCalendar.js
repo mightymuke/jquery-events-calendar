@@ -255,14 +255,10 @@
                 if (plugin.settings.showDayNameInCalendar) {
                     $eventsCalendarDaysList.addClass('showDayNames');
 
-                    for (i = plugin.settings.startWeekOnMonday ? 1 : 0; i < 7; i += 1) {
-                        daysList.push('<li class="eventsCalendar-day-header">' + plugin.settings.dayNamesShort[i] + '</li>');
-
-                        if (i === 6 && plugin.settings.startWeekOnMonday) {
-                            // print sunday header
-                            daysList.push('<li class="eventsCalendar-day-header">' + plugin.settings.dayNamesShort[0] + '</li>');
-                        }
-
+                    var dayOfWeek = new Date.today().moveToDayOfWeek(plugin.settings.startWeekOnMonday ? 1 : 0);
+                    for (i = 0; i < 7; i += 1) {
+                        daysList.push('<li class="eventsCalendar-day-header">' + dayOfWeek.toString(plugin.settings.dayNameFormat) + '</li>');
+                        dayOfWeek.addDays(1);
                     }
                 }
 
@@ -741,7 +737,7 @@
         sortAscending            : true,        // false to sort descending
         eventsLimit              : 4,
         defaultRecurTimes        : 3,           // default times to show recurring item
-        dayNamesShort            : [ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" ],
+        dayNameFormat            : "ddd",
         textCalendarTitle        : "MMMM yyyy",
         textEventHeaderDayView   : "MMMM ddS even\\t\\s:",
         textEventHeaderMonthView : "MMMM even\\t\\s:",
