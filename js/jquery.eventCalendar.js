@@ -131,6 +131,19 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         var _getEvent = function(index) {
             if (index < 0) return null;
             if ((index > 0) && ((!eventItem.recurrence) || (eventItem.recurrence.type === 'none'))) {
+    /**
+     * Simple DTO type object to contain details of an event
+     * @constructor
+     */
+    function EventInstance() {
+        var $EventInstance = this;
+
+        $EventInstance.type = 'none';
+        $EventInstance.eventStartDate = null;
+        $EventInstance.eventEndDate = null;
+        $EventInstance.listingStartDate = null;
+        $EventInstance.listingEndDate = null;
+    }
                 return null;
             }
 
