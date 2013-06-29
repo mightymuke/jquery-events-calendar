@@ -123,14 +123,6 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         _initialise();
     }
 
-    $.eventItem = function(event, onError) {
-        var eventItem = this;
-        var index = 0;
-        var error = false;
-
-        var _getEvent = function(index) {
-            if (index < 0) return null;
-            if ((index > 0) && ((!eventItem.recurrence) || (eventItem.recurrence.type === 'none'))) {
     /**
      * Simple DTO type object to contain details of an event
      * @constructor
@@ -144,92 +136,169 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         $EventInstance.listingStartDate = null;
         $EventInstance.listingEndDate = null;
     }
+
+    /**
+     * EventItem - defines a calendar event
+     * @param {object} event               JSON object defining the event properties
+     * @param {string=} dateFormat         Date format used for the event dates
+     * @param {function(string)=} onError  Function to call should an error occur
+     * @constructor
+     */
+    function EventItem(event, dateFormat, onError) {
+        var $EventItem = this;
+        var _index = 0;
+        var _error = false;
+
+        $EventItem.type = 'none';
+        $EventItem.recurrence = null;
+        $EventItem.eventStartDate = null;
+        $EventItem.eventEndDate = null;
+        $EventItem.listingStartDate = null;
+        $EventItem.listingEndDate = null;
+
+        /**
+         * Gets the recurrence for this event (if no recurrence, returns the event)
+         * @param  {string=} month   The month to constrain the events to
+         * @return {EventInstance}   The first instance of the event
+         */
+        var _getEvent = function(month) {
+            if (_index < 0) { _index = 0; }
+            if ((_index > 0) && ((!$EventItem.recurrence) || ($EventItem.recurrence.type === 'none'))) {
                 return null;
             }
 
-            var eventDate = new Date(eventItem.date);
-            var eventStartDate = new Date(eventItem.startDate);
-            var eventEndDate = new Date(eventItem.endDate);
+            var eventDate = new Date($EventItem.date);
+            var eventStartDate = new Date($EventItem.startDate);
+            var eventEndDate = new Date($EventItem.endDate);
+
+            // DEBT: We should probably do this properly with subclasses
             var i = 0;
-            while (i < index) {
-                switch (eventItem.recurrence.type) {
+            while (i < _index) {
+                switch ($EventItem.recurrence.type) {
                 case 'day':
-                    eventDate = eventDate ? eventDate.addDays(eventItem.recurrence.interval) : null;
-                    eventStartDate = eventStartDate ? eventStartDate.addDays(eventItem.recurrence.interval) : null;
-                    eventEndDate = eventEndDate ? eventEndDate.addDays(eventItem.recurrence.interval) : null;
+                    eventDate = eventDate ? eventDate.addDays($EventItem.recurrence.interval) : null;
+                    eventStartDate = eventStartDate ? eventStartDate.addDays($EventItem.recurrence.interval) : null;
+                    eventEndDate = eventEndDate ? eventEndDate.addDays($EventItem.recurrence.interval) : null;
                     break;
                 case 'week':
-                    eventDate = eventDate ? eventDate.addWeeks(eventItem.recurrence.interval) : null;
-                    eventStartDate = eventStartDate ? eventStartDate.addWeeks(eventItem.recurrence.interval) : null;
-                    eventEndDate = eventEndDate ? eventEndDate.addWeeks(eventItem.recurrence.interval) : null;
+                    eventDate = eventDate ? eventDate.addWeeks($EventItem.recurrence.interval) : null;
+                    eventStartDate = eventStartDate ? eventStartDate.addWeeks($EventItem.recurrence.interval) : null;
+                    eventEndDate = eventEndDate ? eventEndDate.addWeeks($EventItem.recurrence.interval) : null;
                     break;
                 case 'month':
-                    eventDate = eventDate ? eventDate.addMonths(eventItem.recurrence.interval) : null;
-                    eventStartDate = eventStartDate ? eventStartDate.addMonths(eventItem.recurrence.interval) : null;
-                    eventEndDate = eventEndDate ? eventEndDate.addMonths(eventItem.recurrence.interval) : null;
+                    eventDate = eventDate ? eventDate.addMonths($EventItem.recurrence.interval) : null;
+                    eventStartDate = eventStartDate ? eventStartDate.addMonths($EventItem.recurrence.interval) : null;
+                    eventEndDate = eventEndDate ? eventEndDate.addMonths($EventItem.recurrence.interval) : null;
                     break;
                 case 'year':
-                    eventDate = eventDate ? eventDate.addYears(eventItem.recurrence.interval) : null;
-                    eventStartDate = eventStartDate ? eventStartDate.addYears(eventItem.recurrence.interval) : null;
-                    eventEndDate = eventEndDate ? eventEndDate.addYears(eventItem.recurrence.interval) : null;
+                    eventDate = eventDate ? eventDate.addYears($EventItem.recurrence.interval) : null;
+                    eventStartDate = eventStartDate ? eventStartDate.addYears($EventItem.recurrence.interval) : null;
+                    eventEndDate = eventEndDate ? eventEndDate.addYears($EventItem.recurrence.interval) : null;
                     break;
                 }
                 i += 1;
             }
 
-            return {
-                eventType : eventItem.type,
-                date      : eventDate,
-                startDate : eventStartDate,
-                endDate   : eventEndDate,
-                eventDay  : eventStartDate.getDate()
-            };
+            var ei = new EventInstance();
+            ei.type = $EventItem.type;
+            ei.eventStartDate = eventStartDate;
+            ei.eventEndDate = eventEndDate;
+            ei.listingStartDate = eventStartDate;
+            ei.listingEndDate = eventEndDate;
+            return ei;
         };
 
-        var setEventToNone = function() {
-            eventItem.type = 'none';
-            eventItem.recurrence = null;
+        /**
+         * Initialises the recurrence properties to no recurrence
+         * @private
+         */
+        var _setEventToNone = function() {
+            $EventItem.recurrence = null;
+            $EventItem.eventStartDate = null;
+            $EventItem.eventEndDate = null;
+            $EventItem.listingStartDate = null;
+            $EventItem.listingEndDate = null;
         };
 
-        var eventItemError = function(msg) {
-            if (msg && onError) onError(msg);
-            setEventToNone();
-            error = true;
+        /**
+         * Runs the error callback if provided, and puts the event item into an error state
+         * @param {string} msg Error message
+         * @private
+         */
+        var _eventItemError = function(msg) {
+            if (msg && onError) { onError(msg); }
+            _setEventToNone();
+            _error = true;
         };
 
+        /**
+         * Creates a new date object from the date argument
+         * @param {Date|number|string} date  Date to be converted to a "real boy"
+         * @returns {Date}                   Date object representing date argument
+         * @private
+         */
+        var _newDate = function (date) {
+            var newDate;
+            if (typeof date === "object" && date.getMonth) {
+                newDate = new Date(date);
+            } else if (typeof date === 'number') {
+                newDate = new Date(parseInt(date, 10));
+            } else {
+                newDate = Date.parseExact(date, dateFormat);
+            }
+            return newDate;
+        };
+
+        /**
+         * Initialises the event object from the event JSON object
+         * @private
+         */
         var _initialise = function() {
-            setEventToNone();
+            _setEventToNone();
             if (!event) {
-                eventItemError("No event data provided");
+                _eventItemError("No event data provided");
                 return;
             }
 
-            var eventType = event.eventType ? event.eventType.toLowerCase() : 'single';
-            if ($.inArray(eventType, ['single', 'multi']) < 0) {
-                eventItemError("Invalid event type: " + eventType);
-                return;
+            $EventItem.recurrence = new EventRecurrence(event.recurrence);
+
+            $EventItem.eventStartDate = event.startDate ? _newDate(event.startDate) : null;
+            // Cater for obsolete date property
+            if (!$EventItem.eventStartDate) {
+                $EventItem.eventStartDate = event.date ? _newDate(event.date) : null;
             }
+            $EventItem.eventEndDate = event.endDate ? _newDate(event.endDate) : _newDate($EventItem.eventStartDate);
+            $EventItem.listingStartDate = event.listingStartDate ? _newDate(event.listingStartDate) : _newDate($EventItem.eventStartDate);
+            $EventItem.listingEndDate = event.listingEndDate ? _newDate(event.listingEndDate) : _newDate($EventItem.eventEndDate);
 
-            eventItem.type = eventType;
-            eventItem.recurrence = new $.eventRecurrence(event.recurrence);
-            eventItem.date = event.date ? new Date(parseInt(event.date, 10)) : null;
-            eventItem.startDate = event.startDate ? new Date(parseInt(event.startDate, 10)) : null;
-            eventItem.endDate = event.endDate ? new Date(parseInt(event.endDate, 10)) : null;
-            eventItem.eventDay = event.eventDay;
+            // Cater for obsolete type property
+            if (!event.classDetail || event.classDetail.length < 1) {
+                event.classDetail = event.type;
+            }
         };
 
-        eventItem.getFirstEvent = function() {
-            index = 0;
-            return _getEvent(0);
+        /**
+         * Gets the first recurrence for this event (if no recurrence, returns the event)
+         * @param  {string=} month  The month to constrain the events to [Optional]
+         * @return {EventInstance}  The first instance of the event
+         */
+        $EventItem.getFirstEvent = function(month) {
+            _index = 0;
+            return _getEvent(month);
         };
 
-        eventItem.getNextEvent = function(maxTimesToRecur) {
-            index += 1;
-            return (index >= maxTimesToRecur) ? null : _getEvent(index);
+        /**
+         * Gets the next recurrence for this recurrence event (if no recurrence and index > 0 returns null)
+         * @param  {string=} month  The month to constrain the events to [Optional]
+         * @return {EventInstance}  The next instance of the event
+         */
+        $EventItem.getNextEvent = function(month) {
+            _index += 1;
+            return _getEvent(month);
         };
 
         _initialise();
-    };
+    }
 
     // Event Calendar Plugin
     $.eventCalendar = function(element, options) {
