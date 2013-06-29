@@ -300,7 +300,11 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         _initialise();
     }
 
-    // Event Calendar Plugin
+    /**
+     * Event Calendar - the main calendar class
+     * @param {object} element   The element in the DOM that the calendar is to be attached to
+     * @param {object=} options  Parameter overrides - see defaults for complete list
+     */
     $.eventCalendar = function(element, options) {
         var $element = $(element);
         var plugin = this;
@@ -360,7 +364,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
             if (show != "current") {
                 // month change
-                getEvents(plugin.settings.eventsLimit, year, month,false, show);
+                getEvents(plugin.settings.eventsLimit, year, month, false, show);
             }
 
             $element
@@ -382,7 +386,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 if (plugin.settings.showDayNameInCalendar) {
                     $eventsCalendarDaysList.addClass('showDayNames');
 
-                    var dayOfWeek = new Date.today().moveToDayOfWeek(plugin.settings.startWeekOnMonday ? 1 : 0);
+                    var dayOfWeek = Date.today().moveToDayOfWeek(plugin.settings.startWeekOnMonday ? 1 : 0);
                     for (i = 0; i < 7; i += 1) {
                         daysList.push('<li class="eventsCalendar-day-header">' + dayOfWeek.toString(plugin.settings.dayNameFormat) + '</li>');
                         dayOfWeek.addDays(1);
@@ -432,13 +436,13 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 // user send a json in the plugin params
                 plugin.settings.cacheJson = true;
 
-                eventsJson = fillMissingData(plugin.settings.jsonData);
+                eventsJson = plugin.settings.jsonData;
                 getEventsData(eventsJson, limit, year, month, day, direction);
 
             } else if (!plugin.settings.cacheJson || !direction) {
                 // first load: load json and save it to future filters
-                $.getJSON(plugin.settings.eventsjson + "?limit="+limit+"&year="+year+"&month="+month+"&day="+day, function(data) {
-                    eventsJson = fillMissingData(data); // save data to future filters
+                $.getJSON(plugin.settings.eventsjson + "?limit=" + limit + "&year=" + year + "&month=" + month + "&day=" + day, function(data) {
+                    eventsJson = data; // save data to future filters
                     getEventsData(eventsJson, limit, year, month, day, direction);
                 }).error(function() {
                         showError("error getting json: ");
@@ -454,7 +458,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             }
         };
 
-        plugin.highlightMultiDayEvents = function (eventDetails, highlighter) {
+        var _highlightDays = function (eventDetails, highlighter) {
             var dateToBeChecked = new Date(eventDetails.startDate);
             var endDate = new Date(eventDetails.endDate);
             var currentYear = parseInt($element.attr('data-current-year'), 10);
@@ -467,27 +471,19 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             }
         };
 
-        plugin.highlightSingleDayEvents = function (eventDetails, highlighter) {
-            var currentYear = $element.attr('data-current-year');
-            var currentMonth = $element.attr('data-current-month');
-            if (plugin.eventIsToday(eventDetails, currentYear, currentMonth, "")) {
-                highlighter(parseInt(eventDetails.eventDay, 10));
-            }
-        };
+        /**
+         * Highlights days on the calendar that contain an event
+         * @param {EventItem} eventItem           The event to add to the calendar
+         * @param {function(number)} highlighter  Callback to process when a day needs to be highlighted
+         * @param {string=} month                 The month to constrain the events to [Optional]
+         */
+        plugin.highlightCalenderDays = function(eventItem, highlighter, month) {
+            if ((!event) || (!highlighter)) { return; }
 
-        plugin.highlightCalenderDays = function(event, highlighter) {
-            if ((!event) || (!highlighter)) return;
-
-            var eventItem = new $.eventItem(event);
-
-            var eventDetails = eventItem.getFirstEvent();
-            while (eventDetails) {
-                if (eventDetails.eventType === plugin.EventTypes.MULTI.name) {
-                    plugin.highlightMultiDayEvents(eventDetails, highlighter);
-                } else {
-                    plugin.highlightSingleDayEvents(eventDetails, highlighter);
-                }
-                eventDetails = eventItem.getNextEvent(plugin.settings.defaultRecurTimes);
+            var eventInstance = eventItem.getFirstEvent(month);
+            while (eventInstance) {
+                _highlightDays(eventInstance, highlighter);
+                eventInstance = eventItem.getNextEvent(month);
             }
         };
 
@@ -560,9 +556,10 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                                 }
                             }
                         }
-                        plugin.highlightCalenderDays(event, function(dayOfMonth) {
+                        var eventItem = new EventItem(event, plugin.settings.jsonDateFormat);
+                        plugin.highlightCalenderDays(eventItem, function(dayOfMonth) {
                             $element.find('.currentMonth .eventsCalendar-daysList #dayList_' + dayOfMonth).addClass('dayWithEvents');
-                        });
+                        }, month);
                     });
                 }
 
@@ -682,64 +679,6 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             var endDate = event.endDate ? event.endDate : event.date;
             if (!endDate.getMonth) endDate = new Date(parseInt(endDate, 10));
             return eventIsWithinDateRange(startDate, endDate, year, month, day);
-        };
-
-        var fillMissingData = function(data) {
-            if (data.length) {
-                $.each(data, function(key, event) {
-                    // Set the event type
-                    if (!event.eventType || event.eventType.length < 1) {
-                        event.eventType = plugin.EventTypes.SINGLE.name;
-                    } else {
-                        event.eventType = event.eventType.toLowerCase();
-                    }
-
-                    // Cater for obsolete type property
-                    if (!event.classDetail || event.classDetail.length < 1) {
-                        event.classDetail = event.type;
-                    }
-
-                    // Fix date ranges
-                    if (event.eventType == plugin.EventTypes.MULTI.name) {
-                        if (!event.endDate) event.endDate = event.startDate;
-                    } else {
-                        if (!event.startDate) event.startDate = event.date;
-                        if (!event.endDate) event.endDate = event.date;
-                    }
-
-                    // TODO - fix this. Should look at removing this processing
-                    var theDate = event.date;
-                    if (!theDate || theDate.length < 1) {
-                        theDate = event.startDate;
-                    }
-                    if (plugin.settings.jsonDateFormat == 'human') {
-                        var eventDateTime = theDate.split(" ");
-                        var eventDate = eventDateTime[0].split("-");
-                        var eventTime = eventDateTime[1].split(":");
-                        event.eventYear = eventDate[0];
-                        event.eventMonth = parseInt(eventDate[1], 10) - 1;
-                        event.eventDay = parseInt(eventDate[2], 10);
-                        event.eventMonthToShow = parseInt(event.eventMonth, 10) + 1;
-                        event.eventHour = eventTime[0];
-                        event.eventMinute = eventTime[1];
-                        event.eventDate = new Date(event.eventYear, event.eventMonth, event.eventDay, event.eventHour, event.eventMinute, 0);
-                    } else {
-                        var eventDate = new Date(parseInt(theDate, 10));
-                        event.eventDate = eventDate;
-                        event.eventYear = eventDate.getFullYear();
-                        event.eventMonth = eventDate.getMonth();
-                        event.eventDay = eventDate.getDate();
-                        event.eventMonthToShow = event.eventMonth + 1;
-                        event.eventHour = eventDate.getHours();
-                        event.eventMinute = eventDate.getMinutes();
-                    }
-                    if (parseInt(event.eventMinute, 10) <= 9) {
-                        event.eventMinute = "0" + parseInt(event.eventMinute, 10);
-                    }
-                });
-            }
-
-            return data;
         };
 
         // Resize calendar width on window resize
