@@ -49,50 +49,79 @@
  */
 if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
-        //    :     day and count2 - define a day of a month (first Monday, third Friday, etc)
-        //:     frequency - an array of week days (Sunday is 0)
-        //:     end - when the recurrence should end - either 'none' (default), number of times, or a date
-
-        var setRecurrenceToNone = function() {
-            eventRecurrence.type = 'none';
-            eventRecurrence.interval = 0;
 /**
  * Event Calendar Plugin
  */
 (function($) {
     "use strict";
+
+    /**
+     * EventRecurrence - defines recurrence functionality for an event
+     * @param {object} recurrence          JSON object defining recurrence properties
+     * @param {function(string)=} onError  Function to call should an error occur
+     * @constructor
+     */
+    function EventRecurrence(recurrence, onError) {
+        var $EventRecurrence = this;
+        var _error = false;
+
+        $EventRecurrence.type = 'none';
+        $EventRecurrence.interval = 0;
+
+        // TODO - add support for the following:
+        //   day and count2 - define a day of a month (first Monday, third Friday, etc)
+        //   frequency - an array of week days (Sunday is 0)
+        //   end - when the recurrence should end - either 'none' (default), number of times, or a date
+
+        /**
+         * Initialises the recurrence properties to no recurrence
+         * @private
+         */
+        var _setRecurrenceToNone = function() {
+            $EventRecurrence.type = 'none';
+            $EventRecurrence.interval = 0;
         };
 
-        var recurrenceError = function(msg) {
-            if (msg && onError) onError(msg);
-            setRecurrenceToNone();
-            error = true;
+        /**
+         * Runs the error callback if provided, and puts the recurrence into an error state
+         * @param {string} msg   Error message
+         * @private
+         */
+        var _recurrenceError = function(msg) {
+            if (msg && onError) { onError(msg); }
+            _setRecurrenceToNone();
+            _error = true;
         };
 
+        /**
+         * Initialises the recurrence object from the JSON properties provided
+         * @private
+         */
         var _initialise = function() {
-            setRecurrenceToNone();
+            _setRecurrenceToNone();
             if ((!recurrence) || (!recurrence.type)) {
-                recurrenceError("No recurrence data provided");
+                _recurrenceError("No recurrence data provided");
                 return;
             }
 
+            if (DEBUG) { console.log("Defining new recurrence: " + JSON.stringify(recurrence)); }
             var recurType = recurrence.type.toLowerCase();
-            if (recurType === 'none') return;
+            if (recurType === 'none') { return; }
             if ($.inArray(recurType, ['day', 'week', 'month', 'year']) < 0) {
-                recurrenceError("Invalid recurrence type: " + recurType);
+                _recurrenceError("Invalid recurrence type: " + recurType);
                 return;
             }
 
-            eventRecurrence.type = recurType;
-            eventRecurrence.interval = (recurrence.interval) ? parseInt(recurrence.interval, 10) : 0;
-            if ((!eventRecurrence.interval) || (eventRecurrence.interval < 1)) {
-                recurrenceError("Invalid recurrence interval: " + eventRecurrence.interval);
+            $EventRecurrence.type = recurType;
+            $EventRecurrence.interval = recurrence.interval ? parseInt(recurrence.interval, 10) : 0;
+            if ((!$EventRecurrence.interval) || ($EventRecurrence.interval < 1)) {
+                _recurrenceError("Invalid recurrence interval: " + $EventRecurrence.interval);
                 return;
             }
         };
 
         _initialise();
-    };
+    }
 
     $.eventItem = function(event, onError) {
         var eventItem = this;
