@@ -123,7 +123,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         /**
          * Returns the specific occurrence of a recurrence, starting from date
          * @param {Date} date      Starting date of recurrence
-         * @param {number=} index  Number of iterations to index to (defaults to 0)
+         * @param {number=} index  Number of iterations to index to (defaults to 0) [Optional]
          * @returns {Date}
          */
         $EventRecurrence.getRecurrenceDate = function (date, index) {
@@ -187,8 +187,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
     /**
      * EventItem - defines a calendar event
      * @param {object} event               JSON object defining the event properties
-     * @param {string=} dateFormat         Date format used for the event dates
-     * @param {function(string)=} onError  Function to call should an error occur
+     * @param {string=} dateFormat         Date format used for the event dates [Optional]
+     * @param {function(string)=} onError  Function to call should an error occur [Optional]
      * @constructor
      */
     function EventItem(event, dateFormat, onError) {
@@ -204,8 +204,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
         /**
          * Gets the recurrence for this event (if no recurrence, returns the event)
-         * @param  {number=} year    The year to constrain the events to (All Years=-1)
-         * @param  {number=} month   The month to constrain the events to (Jan=0, All Months=-1)
+         * @param  {number=} year    The year to constrain the events to (All Years=-1) [Optional]
+         * @param  {number=} month   The month to constrain the events to (Jan=0, All Months=-1) [Optional]
          * @return {EventInstance}   The first instance of the event
          */
         var _getEvent = function(year, month) {
@@ -260,7 +260,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
         /**
          * Creates a new date object from the date argument
-         * @param {Date|number|string} date  Date to be converted to a "real boy"
+         * @param {date|number|string} date  Date to be converted to a "real boy"
          * @returns {Date}                   Date object representing date argument
          * @private
          */
@@ -306,22 +306,24 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
         /**
          * Gets the first recurrence for this event (if no recurrence, returns the event)
-         * @param  {string=} month  The month to constrain the events to [Optional]
-         * @return {EventInstance}  The first instance of the event
+         * @param  {number=} year    The year to constrain the events to (All Years=-1) [Optional]
+         * @param  {number=} month   The month to constrain the events to (Jan=0, All Months=-1) [Optional]
+         * @return {EventInstance}   The first instance of the event
          */
-        $EventItem.getFirstEvent = function(month) {
+        $EventItem.getFirstEvent = function(year, month) {
             _index = 0;
-            return _getEvent(month);
+            return _getEvent(year, month);
         };
 
         /**
          * Gets the next recurrence for this recurrence event (if no recurrence and index > 0 returns null)
-         * @param  {string=} month  The month to constrain the events to [Optional]
-         * @return {EventInstance}  The next instance of the event
+         * @param  {number=} year    The year to constrain the events to (All Years=-1) [Optional]
+         * @param  {number=} month   The month to constrain the events to (Jan=0, All Months=-1) [Optional]
+         * @return {EventInstance}   The next instance of the event
          */
-        $EventItem.getNextEvent = function(month) {
+        $EventItem.getNextEvent = function(year, month) {
             _index += 1;
-            return _getEvent(month);
+            return _getEvent(year, month);
         };
 
         _initialise();
@@ -330,7 +332,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
     /**
      * Event Calendar - the main calendar class
      * @param {object} element   The element in the DOM that the calendar is to be attached to
-     * @param {object=} options  Parameter overrides - see defaults for complete list
+     * @param {object=} options  Parameter overrides - see defaults for complete list [Optional]
      */
     $.eventCalendar = function(element, options) {
         var $element = $(element);
@@ -504,13 +506,13 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
          * @param {function(number)} highlighter  Callback to process when a day needs to be highlighted
          * @param {string=} month                 The month to constrain the events to [Optional]
          */
-        plugin.highlightCalenderDays = function(eventItem, highlighter, month) {
+        plugin.highlightCalenderDays = function(eventItem, highlighter, year, month) {
             if ((!event) || (!highlighter)) { return; }
 
-            var eventInstance = eventItem.getFirstEvent(month);
+            var eventInstance = eventItem.getFirstEvent(year, month);
             while (eventInstance) {
                 _highlightDays(eventInstance, highlighter);
-                eventInstance = eventItem.getNextEvent(month);
+                eventInstance = eventItem.getNextEvent(year, month);
             }
         };
 
@@ -586,7 +588,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                         var eventItem = new EventItem(event, plugin.settings.jsonDateFormat);
                         plugin.highlightCalenderDays(eventItem, function(dayOfMonth) {
                             $element.find('.currentMonth .eventsCalendar-daysList #dayList_' + dayOfMonth).addClass('dayWithEvents');
-                        }, month);
+                        }, year, month);
                     });
                 }
 
@@ -807,7 +809,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
     //noinspection JSUnresolvedVariable
     /**
      * Event Calendar Plugin
-     * @param {object=} options  Parameter overrides - see defaults for complete list
+     * @param {object=} options  Parameter overrides - see defaults for complete list [Optional]
      * @returns {*}
      */
     $.fn.eventCalendar = function(options) {
@@ -863,7 +865,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
     };
 
     /**
-     * Make classes available for unit testing
+     * Make internal classes available for unit testing
      */
     $.EventRecurrence = EventRecurrence;
     $.EventInstance = EventInstance;
