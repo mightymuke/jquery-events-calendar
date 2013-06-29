@@ -120,6 +120,53 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             }
         };
 
+        /**
+         * Returns the specific occurrence of a recurrence, starting from date
+         * @param {Date} date      Starting date of recurrence
+         * @param {number=} index  Number of iterations to index to (defaults to 0)
+         * @returns {Date}
+         */
+        $EventRecurrence.getRecurrenceDate = function (date, index) {
+            if (!index) { index = 0; }
+            if ((!date) || (index < 0)) { return null; }
+
+            var recurDate = new Date(date);
+            var i = 0;
+            while (i < index) {
+                recurDate = $EventRecurrence.getNextRecurrenceDate(recurDate);
+                i += 1;
+            }
+
+            return recurDate;
+        };
+
+        /**
+         * Returns the next recurrence date in the series, starting from date
+         * @param {Date} date Starting date of recurrence
+         * @returns {Date}
+         */
+        $EventRecurrence.getNextRecurrenceDate = function (date) {
+            if (!date) { return null; }
+
+            var recurDate = new Date(date);
+            switch ($EventRecurrence.type) {
+            case 'day':
+                recurDate = recurDate.addDays($EventRecurrence.interval);
+                break;
+            case 'week':
+                recurDate = recurDate.addWeeks($EventRecurrence.interval);
+                break;
+            case 'month':
+                recurDate = recurDate.addMonths($EventRecurrence.interval);
+                break;
+            case 'year':
+                recurDate = recurDate.addYears($EventRecurrence.interval);
+                break;
+            }
+
+            return recurDate;
+        };
+
         _initialise();
     }
 
@@ -149,7 +196,6 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         var _index = 0;
         var _error = false;
 
-        $EventItem.type = 'none';
         $EventItem.recurrence = null;
         $EventItem.eventStartDate = null;
         $EventItem.eventEndDate = null;
@@ -158,53 +204,34 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
         /**
          * Gets the recurrence for this event (if no recurrence, returns the event)
-         * @param  {string=} month   The month to constrain the events to
+         * @param  {number=} year    The year to constrain the events to (All Years=-1)
+         * @param  {number=} month   The month to constrain the events to (Jan=0, All Months=-1)
          * @return {EventInstance}   The first instance of the event
          */
-        var _getEvent = function(month) {
+        var _getEvent = function(year, month) {
             if (_index < 0) { _index = 0; }
             if ((_index > 0) && ((!$EventItem.recurrence) || ($EventItem.recurrence.type === 'none'))) {
                 return null;
             }
+            var specificYear = year || -1;
+            var specificMonth = month || -1;
 
-            var eventDate = new Date($EventItem.date);
-            var eventStartDate = new Date($EventItem.startDate);
-            var eventEndDate = new Date($EventItem.endDate);
-
-            // DEBT: We should probably do this properly with subclasses
-            var i = 0;
-            while (i < _index) {
-                switch ($EventItem.recurrence.type) {
-                case 'day':
-                    eventDate = eventDate ? eventDate.addDays($EventItem.recurrence.interval) : null;
-                    eventStartDate = eventStartDate ? eventStartDate.addDays($EventItem.recurrence.interval) : null;
-                    eventEndDate = eventEndDate ? eventEndDate.addDays($EventItem.recurrence.interval) : null;
-                    break;
-                case 'week':
-                    eventDate = eventDate ? eventDate.addWeeks($EventItem.recurrence.interval) : null;
-                    eventStartDate = eventStartDate ? eventStartDate.addWeeks($EventItem.recurrence.interval) : null;
-                    eventEndDate = eventEndDate ? eventEndDate.addWeeks($EventItem.recurrence.interval) : null;
-                    break;
-                case 'month':
-                    eventDate = eventDate ? eventDate.addMonths($EventItem.recurrence.interval) : null;
-                    eventStartDate = eventStartDate ? eventStartDate.addMonths($EventItem.recurrence.interval) : null;
-                    eventEndDate = eventEndDate ? eventEndDate.addMonths($EventItem.recurrence.interval) : null;
-                    break;
-                case 'year':
-                    eventDate = eventDate ? eventDate.addYears($EventItem.recurrence.interval) : null;
-                    eventStartDate = eventStartDate ? eventStartDate.addYears($EventItem.recurrence.interval) : null;
-                    eventEndDate = eventEndDate ? eventEndDate.addYears($EventItem.recurrence.interval) : null;
-                    break;
+            var eventDate = $EventItem.recurrence.getRecurrenceDate($EventItem.eventStartDate, _index);
+            if (specificMonth >= 0) {
+                while ((eventDate.getYear() < specificYear) || (eventDate.getMonth() < specificMonth)) {
+                    eventDate = $EventItem.recurrence.getNextRecurrenceDate(eventDate);
                 }
-                i += 1;
             }
+
+            var dateDifference = Math.round((eventDate - $EventItem.eventStartDate) / 1000);
 
             var ei = new EventInstance();
             ei.type = $EventItem.type;
-            ei.eventStartDate = eventStartDate;
-            ei.eventEndDate = eventEndDate;
-            ei.listingStartDate = eventStartDate;
-            ei.listingEndDate = eventEndDate;
+            ei.eventStartDate = eventDate;
+            ei.eventEndDate = (new Date($EventItem.eventEndDate)).addSeconds(dateDifference);
+            ei.listingStartDate = (new Date($EventItem.listingStartDate)).addSeconds(dateDifference);
+            ei.listingEndDate = (new Date($EventItem.listingEndDate)).addSeconds(dateDifference);
+
             return ei;
         };
 
