@@ -835,4 +835,11 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         moveOpacity              : 0.15         // month and events fadeOut to this opacity
     };
 
+    /**
+     * Make classes available for unit testing
+     */
+    $.EventRecurrence = EventRecurrence;
+    $.EventInstance = EventInstance;
+    $.EventItem = EventItem;
+
 }(jQuery));
