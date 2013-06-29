@@ -1,34 +1,37 @@
-/*! @license: jquery.eventCalendar.js
-    @author:  Jaime Fernandez (@vissit)
-    @company: Paradigma Tecnologico (@paradigmate)
-    @version: 0.54
-    @date:    18-04-2013
-*/
+/**
+ * @preserve: jquery.eventCalendar.js
+ * @version:  0.60
+ * @author:   Jaime Fernandez (@vissit)
+ * @company:  Paradigma Tecnologico (@paradigmate)
+ * @date:     2013-06-29
+ * @website:  http://www.vissit.com/projects/eventCalendar/
+ */
 
 /*
     JSON data format:
-        date        : event date either in timestamp format or 'YYYY-MM-DD HH:MM:SS'
-        startDate   : event start date - used if event spans a number of days (defaults to date)
-        endDate     : event end date - used if event spans a number of days (defaults to date)
-        eventType   : single - event is on date. (default)
-                               event is listed from startDate to endDate. If either are empty, date is used
-                    : multi  - event lasts from startDate to endDate. If either are empty, date is used
-        recurrence  : event recurring type
-                    : - JSON format:
-                    :     type - the type of repetition: 'day', 'week', 'month', 'year'
-                    :     interval - the interval between events in the "type" units
-                    :     day and count2 - define a day of a month (first Monday, third Friday, etc)
-                    :     frequency - an array of week days (Sunday is 0)
-                    :     end - when the recurrence should end - either 'none' (default), number of times, or a date
-                    : - Examples of the rec_type data:
-                    :     { type: 'day', interval: 3 } - every three days
-                    :     { type: 'month', interval: 2 } - every two months
-                    :     { type: 'month', interval: 1, ???? _1_2_ - second Monday of each month
-                    :     { type: 'week', interval: 2, frequency: [1,5] } - Monday and Friday of each second week
-        classDetail : event class - used to generate a class for styling
-        title       : event name - becomes the header line
-        description : event description - becomes the detail (optionally hidden)
-        url         : url of page containing event details
+        startDate        : event start date - either in timestamp format or 'YYYY-MM-DD HH:MM:SS'
+        endDate          : event end date - used if event spans a number of days (defaults to startDate)
+        listingStartDate : listing start date for this event (defaults to startDate)
+        listingEndDate   : listing end date for this event (defaults to endDate)
+        recurrence       : event recurring type
+                         : - JSON format:
+                         :     type - the type of repetition: 'day', 'week', 'month', 'year'
+                         :     interval - the interval between events in the "type" units
+                         :     day and count2 - define a day of a month (first Monday, third Friday, etc)
+                         :     frequency - an array of week days (Sunday is 0)
+                         :     end - when the recurrence should end - either 'none' (default), number of times, or a date
+                         : - Examples of the rec_type data:
+                         :     { type: 'day', interval: 3 } - every three days
+                         :     { type: 'month', interval: 2 } - every two months
+                         :     { type: 'month', interval: 1, ???? _1_2_ - second Monday of each month
+                         :     { type: 'week', interval: 2, frequency: [1,5] } - Monday and Friday of each second week
+        classDetail      : event class - used to generate a class for styling the detail section
+        title            : event name - becomes the header line
+        description      : event description - becomes the detail (optionally hidden)
+        url              : url of page containing event details
+    Obsolete:
+        date             : event date either in timestamp format or 'YYYY-MM-DD HH:MM:SS'
+        type             : event class - used to generate a class for styling the detail section
 */
 
 ;(function($) {
