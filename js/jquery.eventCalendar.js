@@ -769,6 +769,12 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         _initialise();
     };
 
+    //noinspection JSUnresolvedVariable
+    /**
+     * Event Calendar Plugin
+     * @param {object=} options  Parameter overrides - see defaults for complete list
+     * @returns {*}
+     */
     $.fn.eventCalendar = function(options) {
         return this.each(function()
         {
