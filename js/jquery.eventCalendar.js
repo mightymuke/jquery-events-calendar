@@ -34,12 +34,20 @@
         type             : event class - used to generate a class for styling the detail section
 */
 
-;(function($) {
-    "use strict";
-
-    $.eventRecurrence = function(recurrence, onError) {
-        var eventRecurrence = this;
-        var error = false;
+/**
+ * Enable debugging
+ * - anything contained in a block with a DEBUG check is automatically removed by uglify-js
+ *   http://jstarrdewar.com/blog/2013/02/28/use-uglify-to-automatically-strip-debug-messages-from-your-javascript
+ *
+ * JSLint doesn't like this typeof notation, but we must use this particular check
+ * for uglify-js to correctly remove the "dead code". I have searched (for hours) for
+ * a way to either remove this particular JSLint check, or to hide this line completely
+ * from JSLint, but unfortunately I was unable to do it. If we do it the way JSLint
+ * wants then it always throws an exception (as the undefined check doesn't work for
+ * global variables) and the only workaround was to explicitly specify the global
+ * context (window), but that stopped uglify-js from correctly removing the code.
+ */
+if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
         //    :     day and count2 - define a day of a month (first Monday, third Friday, etc)
         //:     frequency - an array of week days (Sunday is 0)
@@ -48,6 +56,11 @@
         var setRecurrenceToNone = function() {
             eventRecurrence.type = 'none';
             eventRecurrence.interval = 0;
+/**
+ * Event Calendar Plugin
+ */
+(function($) {
+    "use strict";
         };
 
         var recurrenceError = function(msg) {
