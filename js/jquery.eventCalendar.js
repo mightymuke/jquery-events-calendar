@@ -799,16 +799,19 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         });
     };
 
-    // Define the parameters with the default values of the function
+    //noinspection JSUnresolvedVariable
+    /**
+     * Defines the default values for the function parameters
+     * @type {{eventsJson: string, jsonDateFormat: string, jsonData: string, cacheJson: boolean, sortAscending: boolean, eventsLimit: number, dayNameFormat: string, textCalendarTitle: string, textEventHeaderDayView: string, textEventHeaderMonthView: string, textNoEvents: string, textNext: string, textPrevious: string, textNextEvents: string, textGoToEventUrl: string, showDayAsWeeks: boolean, startWeekOnMonday: boolean, showDayNameInCalendar: boolean, showDescription: boolean, collapsible: boolean, onlyOneDescription: boolean, openEventInNewWindow: boolean, eventsScrollable: boolean, initialEventList: boolean, currentDate: Date, moveSpeed: number, moveOpacity: number}}
+     */
     $.fn.eventCalendar.defaults = {
         eventsJson               : "js/events.json",
-        jsonDateFormat           : "timestamp", // you can use also "human" which is the format 'YYYY-MM-DD HH:MM:SS'
+        jsonDateFormat           : "timestamp", // either timestamp or a format as specified here: https://code.google.com/p/datejs/wiki/FormatSpecifiers
         jsonData                 : "",          // to load and inline json (not ajax calls)
         cacheJson                : true,        // if true plugin get a json only first time and after plugin filter events
                                                 // if false plugin get a new json on each date change
         sortAscending            : true,        // false to sort descending
         eventsLimit              : 4,
-        defaultRecurTimes        : 3,           // default times to show recurring item
         dayNameFormat            : "ddd",
         textCalendarTitle        : "MMMM yyyy",
         textEventHeaderDayView   : "MMMM ddS even\\t\\s:",
