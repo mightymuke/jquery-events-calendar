@@ -134,6 +134,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             var i = 0;
             while (i < index) {
                 recurDate = $EventRecurrence.getNextRecurrenceDate(recurDate);
+                if (!recurDate) { break; }
                 i += 1;
             }
 
@@ -161,6 +162,9 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 break;
             case 'year':
                 recurDate = recurDate.addYears($EventRecurrence.interval);
+                break;
+            default:
+                recurDate = null;
                 break;
             }
 
@@ -207,6 +211,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
          * @param  {number=} year    The year to constrain the events to (All Years=-1) [Optional]
          * @param  {number=} month   The month to constrain the events to (Jan=0, All Months=-1) [Optional]
          * @return {EventInstance}   The first instance of the event
+         * @private
          */
         var _getEvent = function(year, month) {
             if (_index < 0) { _index = 0; }
@@ -216,21 +221,31 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             var specificYear = year || -1;
             var specificMonth = month || -1;
 
-            var eventDate = $EventItem.recurrence.getRecurrenceDate($EventItem.eventStartDate, _index);
-            if (specificMonth >= 0) {
-                while ((eventDate.getYear() < specificYear) || (eventDate.getMonth() < specificMonth)) {
-                    eventDate = $EventItem.recurrence.getNextRecurrenceDate(eventDate);
+            // Get initial event dates
+            var eventStartDate = $EventItem.recurrence.getRecurrenceDate($EventItem.eventStartDate, _index);
+            var dateDifference = Math.round((eventStartDate - $EventItem.eventStartDate) / 1000);
+            var eventEndDate = (new Date($EventItem.eventEndDate)).addSeconds(dateDifference);
+
+            // Check event dates are within required period
+            if (eventStartDate && (specificYear >= 0 || specificMonth >= 0)) {
+                while (!$EventItem.datePeriodIsCurrent(eventStartDate, eventEndDate, specificYear, specificMonth)) {
+                    eventStartDate = $EventItem.recurrence.getNextRecurrenceDate(eventStartDate);
+                    if (!eventStartDate) { break; }
+                    dateDifference = Math.round((eventStartDate - $EventItem.eventStartDate) / 1000);
+                    eventEndDate = (new Date($EventItem.eventEndDate)).addSeconds(dateDifference);
                 }
             }
 
-            var dateDifference = Math.round((eventDate - $EventItem.eventStartDate) / 1000);
-
-            var ei = new EventInstance();
-            ei.type = $EventItem.type;
-            ei.eventStartDate = eventDate;
-            ei.eventEndDate = (new Date($EventItem.eventEndDate)).addSeconds(dateDifference);
-            ei.listingStartDate = (new Date($EventItem.listingStartDate)).addSeconds(dateDifference);
-            ei.listingEndDate = (new Date($EventItem.listingEndDate)).addSeconds(dateDifference);
+            // Create return object
+            var ei = null;
+            if (eventStartDate) {
+                ei = new EventInstance();
+                ei.type = $EventItem.type;
+                ei.eventStartDate = eventStartDate;
+                ei.eventEndDate = eventEndDate;
+                ei.listingStartDate = (new Date($EventItem.listingStartDate)).addSeconds(dateDifference);
+                ei.listingEndDate = (new Date($EventItem.listingEndDate)).addSeconds(dateDifference);
+            }
 
             return ei;
         };
@@ -260,7 +275,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
         /**
          * Creates a new date object from the date argument
-         * @param {date|number|string} date  Date to be converted to a "real boy"
+         * @param {Date|number|string} date  Date to be converted to a "real boy"
          * @param {string=} dateFormat       Date format used for the event dates [Optional]
          * @returns {Date}                   Date object representing date argument
          * @private
@@ -273,7 +288,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 newDate = new Date(date);
             } else if (typeof date === 'number') {
                 newDate = new Date(date);
-            } else if ((typeof date === 'string') && (dateFormat)) {
+            } else if ((typeof date === 'string') && dateFormat) {
                 newDate = (dateFormat.toLowerCase() === 'timestamp') ? new Date(parseInt(date, 10)) : Date.parseExact(date, dateFormat);
             }
             if (!newDate) {
@@ -309,6 +324,44 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             if (!event.classDetail || event.classDetail.length < 1) {
                 event.classDetail = event.type;
             }
+        };
+
+        /**
+         * Returns true if this event instance is in the required month / year
+         * @param  {Date} startDate  The start date of the range to validate
+         * @param  {Date} endDate    The end date of the range to validate
+         * @param  {number=} year    The year to constrain the events to (All Years=-1) [Optional]
+         * @param  {number=} month   The month to constrain the events to (Jan=0, All Months=-1) [Optional]
+         * @param  {number=} day     The day to constrain the events to (Sun=0, All Days=-1) [Optional]
+         * @returns {boolean}
+         */
+        $EventItem.datePeriodIsCurrent = function(startDate, endDate, year, month, day) {
+            var start = 0;
+            var end = 0;
+            var dateToCheck = 0;
+
+            // Check Year
+            if (year >= 0) {
+                start += startDate.getFullYear() * 10000;
+                end += endDate.getFullYear() * 10000;
+                dateToCheck += year * 10000;
+            }
+
+            // Check Month
+            if (month >= 0) {
+                start += startDate.getMonth() * 100;
+                end += endDate.getMonth() * 100;
+                dateToCheck += month * 100;
+            }
+
+            // Check Day
+            if (day >= 0) {
+                start += startDate.getDate();
+                end += endDate.getDate();
+                dateToCheck += day;
+            }
+
+            return ((dateToCheck >= start) && (dateToCheck <= end));
         };
 
         /**
@@ -664,57 +717,9 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         /* The above still needs to be refactored     */
         /* ========================================== */
 
-        var eventIsWithinDateRange = function (startDate, endDate, year, month, day) {
-            var start = 0;
-            var end = 0;
-            var dateToCheck = 0;
 
-            // Check Year
-            if (year != "") {
-                start += startDate.getFullYear() * 10000;
-                end += endDate.getFullYear() * 10000;
-                dateToCheck += parseInt(year, 10) * 10000;
-            }
-
-            // Check Month
-            if (month !== false) {
-                start += startDate.getMonth() * 100;
-                end += endDate.getMonth() * 100;
-                dateToCheck += month * 100;
-            }
-
-            // Check Day
-            if (day != "") {
-                start += startDate.getDate();
-                end += endDate.getDate();
-                dateToCheck += parseInt(day, 10);
-            }
-
-            return ((dateToCheck >= start) && (dateToCheck <= end));
         };
 
-        plugin.EventTypes = {
-            SINGLE : { value: 0, name: "single" },
-            MULTI  : { value: 1, name: "multi" }
-        };
-        if (Object.freeze) { Object.freeze(plugin.EventTypes); }
-
-        plugin.settings = {};
-
-        plugin.eventIsToday = function (event, year, month, day) {
-            var startDate = (event.eventType === plugin.EventTypes.MULTI.name) ? event.startDate : event.date;
-            if (!startDate.getMonth) startDate = new Date(parseInt(startDate, 10));
-            var endDate = (event.eventType === plugin.EventTypes.MULTI.name) ? event.endDate : event.date;
-            if (!endDate.getMonth) endDate = new Date(parseInt(endDate, 10));
-            return eventIsWithinDateRange(startDate, endDate, year, month, day);
-        };
-
-        plugin.eventIsCurrent = function (event, year, month, day) {
-            var startDate = event.startDate ? event.startDate : event.date;
-            if (!startDate.getMonth) startDate = new Date(parseInt(startDate, 10));
-            var endDate = event.endDate ? event.endDate : event.date;
-            if (!endDate.getMonth) endDate = new Date(parseInt(endDate, 10));
-            return eventIsWithinDateRange(startDate, endDate, year, month, day);
         };
 
         // Resize calendar width on window resize
@@ -768,8 +773,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
             $element.on('click', '.eventsCalendar-day a', function (e) {
                 e.preventDefault();
-                var year = $element.attr('data-current-year');
-                var month = $element.attr('data-current-month');
+                var year = parseInt($element.attr('data-current-year'), 10);
+                var month = parseInt($element.attr('data-current-month'), 10);
                 var day = $(this).parent().attr('rel');
 
                 getEvents(false, year, month, day, "day");
