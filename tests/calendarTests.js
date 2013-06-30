@@ -3,11 +3,12 @@
 (function($) {
 
     var eventCalendar;
+    window.DEBUG = false;
 
     module("EventCalendar: Initialisation", {
         setup: function() {
             $('body').append('<div id="eventCalendarDefault" style="visibility: hidden; display: none;"></div>');
-            var eventsInline = [{ "date": "1337594400000", "type": "meeting", "title": "Project A meeting", "description": "Lorem Ipsum dolor set", "url": "http://www.event1.com/" }];
+            var eventsInline = [{ "startDate": "1337594400000", "classDetail": "meeting", "title": "Project A meeting", "description": "Lorem Ipsum dolor set", "url": "http://www.event1.com/" }];
             $('#eventCalendarDefault').eventCalendar({
                 currentDate : new Date(2010, 11, 12, 13, 14, 15, 16),
                 jsonData    : eventsInline
@@ -34,15 +35,16 @@
 }(jQuery));
 
 // Date matching tests
-
+/*
 (function($) {
 
     var eventCalendar;
+    window.DEBUG = false;
 
     module("Date Matching", {
         setup: function() {
             $('body').append('<div id="eventCalendarDefault" style="visibility: hidden; display: none;"></div>');
-            var eventsInline = [{ "date": "1337594400000", "type": "meeting", "title": "Project A meeting", "description": "Lorem Ipsum dolor set", "url": "http://www.event1.com/" }];
+            var eventsInline = [{ "startDate": "1337594400000", "classDetail": "meeting", "title": "Project A meeting", "description": "Lorem Ipsum dolor set", "url": "http://www.event1.com/" }];
             $('#eventCalendarDefault').eventCalendar({
                 currentDate : new Date(2010, 11, 12, 13, 14, 15, 16),
                 jsonData    : eventsInline
@@ -111,43 +113,12 @@
     });
 
 }(jQuery));
-
-// Event type tests
-
-(function($) {
-
-    var eventCalendar;
-
-    module("Event Type Enum", {
-        setup: function() {
-            $('body').append('<div id="eventCalendarDefault" style="visibility: hidden; display: none;"></div>');
-            var eventsInline = [{ "date": "1337594400000", "type": "meeting", "title": "Project A meeting", "description": "Lorem Ipsum dolor set", "url": "http://www.event1.com/" }];
-            $('#eventCalendarDefault').eventCalendar({
-                currentDate : new Date(2010, 11, 12, 13, 14, 15, 16),
-                jsonData    : eventsInline
-            });
-            eventCalendar = $('#eventCalendarDefault').data('eventCalendar');
-        },
-        teardown: function() {
-            $('#eventCalendarDefault').remove();
-        }
-    });
-
-    test("Event Type: Multi", function() {
-        var et = eventCalendar.EventTypes.MULTI;
-        equal(et.name, "multi", "Defined multi name is as expected");
-    });
-
-    test("Event Type: Single", function() {
-        var et = eventCalendar.EventTypes.SINGLE;
-        equal(et.name, "single", "Defined single name is as expected");
-    });
-
-}(jQuery));
-
+*/
 // Event Recurrence item
 
 (function($) {
+
+    window.DEBUG = false;
 
     module("Event Recurrence", {
         setup: function() {
@@ -224,6 +195,8 @@
 // Event Item
 
 (function($) {
+
+    window.DEBUG = false;
 
     module("Event Item", {
         setup: function() {

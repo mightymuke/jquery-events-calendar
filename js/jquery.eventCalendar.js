@@ -261,18 +261,25 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         /**
          * Creates a new date object from the date argument
          * @param {date|number|string} date  Date to be converted to a "real boy"
+         * @param {string=} dateFormat       Date format used for the event dates [Optional]
          * @returns {Date}                   Date object representing date argument
          * @private
          */
-        var _newDate = function (date) {
-            var newDate;
+        var _newDate = function (date, dateFormat) {
+            if (!date) { return null; }
+
+            var newDate = null;
             if (typeof date === "object" && date.getMonth) {
                 newDate = new Date(date);
             } else if (typeof date === 'number') {
-                newDate = new Date(parseInt(date, 10));
-            } else {
-                newDate = Date.parseExact(date, dateFormat);
+                newDate = new Date(date);
+            } else if ((typeof date === 'string') && (dateFormat)) {
+                newDate = (dateFormat.toLowerCase() === 'timestamp') ? new Date(parseInt(date, 10)) : Date.parseExact(date, dateFormat);
             }
+            if (!newDate) {
+                newDate = Date.parse(date);
+            }
+
             return newDate;
         };
 
@@ -289,14 +296,14 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
             $EventItem.recurrence = new EventRecurrence(event.recurrence);
 
-            $EventItem.eventStartDate = event.startDate ? _newDate(event.startDate) : null;
+            $EventItem.eventStartDate = event.startDate ? _newDate(event.startDate, dateFormat) : null;
             // Cater for obsolete date property
             if (!$EventItem.eventStartDate) {
-                $EventItem.eventStartDate = event.date ? _newDate(event.date) : null;
+                $EventItem.eventStartDate = event.date ? _newDate(event.date, dateFormat) : null;
             }
-            $EventItem.eventEndDate = event.endDate ? _newDate(event.endDate) : _newDate($EventItem.eventStartDate);
-            $EventItem.listingStartDate = event.listingStartDate ? _newDate(event.listingStartDate) : _newDate($EventItem.eventStartDate);
-            $EventItem.listingEndDate = event.listingEndDate ? _newDate(event.listingEndDate) : _newDate($EventItem.eventEndDate);
+            $EventItem.eventEndDate = event.endDate ? _newDate(event.endDate, dateFormat) : _newDate($EventItem.eventStartDate);
+            $EventItem.listingStartDate = event.listingStartDate ? _newDate(event.listingStartDate, dateFormat) : _newDate($EventItem.eventStartDate);
+            $EventItem.listingEndDate = event.listingEndDate ? _newDate(event.listingEndDate, dateFormat) : _newDate($EventItem.eventEndDate);
 
             // Cater for obsolete type property
             if (!event.classDetail || event.classDetail.length < 1) {
@@ -483,7 +490,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
             $element.find('.current').removeClass('current');
             if (day > '') {
-                $element.find('#dayList_'+day).addClass('current');
+                $element.find('#dayList_' + day).addClass('current');
             }
         };
 
@@ -750,9 +757,9 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             var day = "" + date.getDate();
 
             if (plugin.settings.initialEventList && plugin.settings.initialEventList === 'day') {
-                getEvents(plugin.settings.eventsLimit, year, month, day, "day");
-            } else if (plugin.settings.initialEventList && plugin.settings.initialEventList === "month") {
-                getEvents(plugin.settings.eventsLimit, year, month, false, "month");
+                getEvents(plugin.settings.eventsLimit, year, month, day, 'day');
+            } else if (plugin.settings.initialEventList && plugin.settings.initialEventList === 'month') {
+                getEvents(plugin.settings.eventsLimit, year, month, false, 'month');
             } else {
                 getEvents(plugin.settings.eventsLimit, false, false, false, false);
             }
@@ -831,7 +838,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
     //noinspection JSUnresolvedVariable
     /**
      * Defines the default values for the function parameters
-     * @type {{eventsJson: string, jsonDateFormat: string, jsonData: string, cacheJson: boolean, sortAscending: boolean, eventsLimit: number, dayNameFormat: string, textCalendarTitle: string, textEventHeaderDayView: string, textEventHeaderMonthView: string, textNoEvents: string, textNext: string, textPrevious: string, textNextEvents: string, textGoToEventUrl: string, showDayAsWeeks: boolean, startWeekOnMonday: boolean, showDayNameInCalendar: boolean, showDescription: boolean, collapsible: boolean, onlyOneDescription: boolean, openEventInNewWindow: boolean, eventsScrollable: boolean, initialEventList: boolean, currentDate: Date, moveSpeed: number, moveOpacity: number}}
+     * @type {{eventsJson: string, jsonDateFormat: string, jsonData: string, cacheJson: boolean, sortAscending: boolean, eventsLimit: number, dayNameFormat: string, textCalendarTitle: string, textEventHeaderDayView: string, textEventHeaderMonthView: string, textNoEvents: string, textNext: string, textPrevious: string, textNextEvents: string, textGoToEventUrl: string, showDayAsWeeks: boolean, startWeekOnMonday: boolean, showDayNameInCalendar: boolean, showDescription: boolean, collapsible: boolean, onlyOneDescription: boolean, openEventInNewWindow: boolean, eventsScrollable: boolean, initialEventList: boolean|string, currentDate: Date, moveSpeed: number, moveOpacity: number}}
      */
     $.fn.eventCalendar.defaults = {
         eventsJson               : "js/events.json",
