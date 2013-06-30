@@ -527,32 +527,55 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             }
         };
 
-        var _highlightDays = function (eventDetails, highlighter) {
-            var dateToBeChecked = new Date(eventDetails.startDate);
-            var endDate = new Date(eventDetails.endDate);
-            var currentYear = parseInt($element.attr('data-current-year'), 10);
-            var currentMonth = parseInt($element.attr('data-current-month'), 10);
-            while (dateToBeChecked.compareTo(endDate) <= 0) {
-                if (dateToBeChecked.getFullYear() === currentYear && dateToBeChecked.getMonth() === currentMonth) {
-                    highlighter(dateToBeChecked.getDate());
+        $EventCalendar.addEventToListing = function(eventItem) {
+            // pass in limit and dont exceed  (ie, max limit - number items)
+            // if month or day exist then only show matched events
+            // Need to check if date between listing dates, not event dates
+            // Need to add recursion
+/*
+                if (plugin.eventIsCurrent(event, year, month, day)) {
+                    // if initial load then load only future events
+                    if (month === false && event.eventDate < new Date()) {
+
+                    } else {
+                        var eventStringDate = event.eventDay + "/" + event.eventMonthToShow + "/" + event.eventYear;
+                        //var eventTitleStyle = (plugin.eventIsToday(event, year, month, day)) ? "current" : "";
+                        var eventTitleStyle = "current";
+                        if (event.url) {
+                            var eventTitle = '<a href="' + event.url + '" target="' + eventLinkTarget + '" class="eventTitle ' + eventTitleStyle + '">' + event.title + '</a>';
+                        } else {
+                            var eventTitle = '<span class="eventTitle ' + eventTitleStyle + '">' + event.title + '</span>';
+                        }
+                        events.push('<li id="' + key + '" class="' + event.classDetail + '"><time datetime="' + event.eventDate + '"><em>' + eventStringDate + '</em><small>' + event.eventHour + ":" + event.eventMinute + '</small></time>' + eventTitle + '<div class="eventDesc ' + eventDescClass + '">' + event.description + '</div></li>');
+                    }
                 }
-                dateToBeChecked.addDays(1);
-            }
+                */
+            return 1; // return number of items added
         };
 
         /**
          * Highlights days on the calendar that contain an event
          * @param {EventItem} eventItem           The event to add to the calendar
          * @param {function(number)} highlighter  Callback to process when a day needs to be highlighted
-         * @param {string=} month                 The month to constrain the events to [Optional]
+         * @param {number=} year                  The year to constrain the events to (All Years=-1) [Optional]
+         * @param {number=} month                 The month to constrain the events to (Jan=0, All Months=-1) [Optional]
          */
-        plugin.highlightCalenderDays = function(eventItem, highlighter, year, month) {
-            if ((!event) || (!highlighter)) { return; }
+        $EventCalendar.addEventToCalendar = function(eventItem, highlighter, year, month) {
+            if ((!eventItem) || (!highlighter)) { return; }
+            var specificYear = year || -1;
+            var specificMonth = month || -1;
 
-            var eventInstance = eventItem.getFirstEvent(year, month);
+            var eventInstance = eventItem.getFirstEvent(specificYear, specificMonth);
             while (eventInstance) {
-                _highlightDays(eventInstance, highlighter);
-                eventInstance = eventItem.getNextEvent(year, month);
+                var dateToBeChecked = new Date(eventInstance.eventStartDate);
+                while (dateToBeChecked.compareTo(eventInstance.eventEndDate) <= 0) {
+                    if (((specificYear === -1) || (dateToBeChecked.getFullYear() === specificYear)) &&
+                            ((specificMonth === -1) || (dateToBeChecked.getMonth() === specificMonth))) {
+                        highlighter(dateToBeChecked.getDate());
+                    }
+                    dateToBeChecked.addDays(1);
+                }
+                eventInstance = eventItem.getNextEvent(specificYear, specificMonth);
             }
         };
 
@@ -603,30 +626,16 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                         eventLinkTarget = '_target';
                     }
 
-                    var i = 0;
+                    var itemsInList = 0;
                     $.each(data, function(key, event) {
-                        if (limit === 0 || limit > i) {
-                            // if month or day exist then only show matched events
+                        var eventItem = new EventItem(event, $EventCalendar.settings.jsonDateFormat);
 
-                            if (plugin.eventIsCurrent(event, year, month, day)) {
-                                // if initial load then load only future events
-                                if (month === false && event.eventDate < new Date()) {
-
-                                } else {
-                                    var eventStringDate = event.eventDay + "/" + event.eventMonthToShow + "/" + event.eventYear;
-                                    var eventTitleStyle = (plugin.eventIsToday(event, year, month, day)) ? "current" : "";
-                                    if (event.url) {
-                                        var eventTitle = '<a href="' + event.url + '" target="' + eventLinkTarget + '" class="eventTitle ' + eventTitleStyle + '">' + event.title + '</a>';
-                                    } else {
-                                        var eventTitle = '<span class="eventTitle ' + eventTitleStyle + '">' + event.title + '</span>';
-                                    }
-                                    events.push('<li id="' + key + '" class="' + event.classDetail + '"><time datetime="' + event.eventDate + '"><em>' + eventStringDate + '</em><small>' + event.eventHour + ":" + event.eventMinute + '</small></time>' + eventTitle + '<div class="eventDesc ' + eventDescClass + '">' + event.description + '</div></li>');
-                                    i++;
-                                }
-                            }
+                        if (limit === 0 || limit > itemsInList) {
+                            itemsInList += $EventCalendar.addEventToListing(eventItem);
                         }
-                        var eventItem = new EventItem(event, plugin.settings.jsonDateFormat);
-                        plugin.highlightCalenderDays(eventItem, function(dayOfMonth) {
+
+                        // Add to calendar
+                        $EventCalendar.addEventToCalendar(eventItem, function(dayOfMonth) {
                             $element.find('.currentMonth .eventsCalendar-daysList #dayList_' + dayOfMonth).addClass('dayWithEvents');
                         }, year, month);
                     });
