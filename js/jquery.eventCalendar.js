@@ -611,7 +611,15 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
                 var events = [];
 
-                data = $(data).sort(sortJson); // sort event by dates
+                data = $(data).sort(function(aDate, bDate) {
+                    var compare;
+                    if ($EventCalendar.settings.sortAscending) {
+                        compare = aDate.startDate.toLowerCase() > bDate.startDate.toLowerCase() ? 1 : -1;
+                    } else {
+                        compare = aDate.startDate.toLowerCase() < bDate.startDate.toLowerCase() ? 1 : -1;
+                    }
+                    return compare;
+                }); // sort event by dates
 
                 // each event
                 if (data.length) {
@@ -681,16 +689,6 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                     $element.find('.eventsCalendar-monthWrap.oldMonth').remove();
                 });
             });
-        };
-
-        var sortJson = function(a, b){
-            var aDate = (a.eventType === plugin.EventTypes.MULTI.name) ? a.startDate : a.date;
-            var bDate = (b.eventType === plugin.EventTypes.MULTI.name) ? b.startDate : b.date;
-            if (plugin.settings.sortAscending) {
-                return aDate.toLowerCase() > bDate.toLowerCase() ? 1 : -1;
-            } else {
-                return aDate.toLowerCase() < bDate.toLowerCase() ? 1 : -1;
-            }
         };
 
         var showError = function(msg) {
