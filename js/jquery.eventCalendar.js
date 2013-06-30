@@ -394,21 +394,18 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
      * @param {object} element   The element in the DOM that the calendar is to be attached to
      * @param {object=} options  Parameter overrides - see defaults for complete list [Optional]
      */
-    $.eventCalendar = function(element, options) {
+    function EventCalendar(element, options) {
+        var $EventCalendar = this;
         var $element = $(element);
-        var plugin = this;
         var directionLeftMove = "300";
         var eventsJson = {};
 
-        /* ========================================== */
-        /* The following still needs to be refactored */
-        /* ========================================== */
 
         var dateSlider = function(show, year, month) {
             var $eventsCalendarSlider = $("<div class='eventsCalendar-slider'></div>");
             var $eventsCalendarMonthWrap = $("<div class='eventsCalendar-monthWrap'></div>");
             var $eventsCalendarTitle = $("<div class='eventsCalendar-currentTitle'><a href='#' class='monthTitle'></a></div>");
-            var $eventsCalendarArrows = $("<a href='#' class='arrow prev'><span>" + plugin.settings.textPrevious + "</span></a><a href='#' class='arrow next'><span>" + plugin.settings.textNext + "</span></a>");
+            var $eventsCalendarArrows = $("<a href='#' class='arrow prev'><span>" + $EventCalendar.settings.textPrevious + "</span></a><a href='#' class='arrow next'><span>" + $EventCalendar.settings.textNext + "</span></a>");
             var $eventsCalendarDaysList = $("<ul class='eventsCalendar-daysList'></ul>");
             var date = new Date();
             var day;
@@ -521,16 +518,16 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
             $element.find('.eventsCalendar-loading').fadeIn();
 
-            if (plugin.settings.jsonData) {
+            if ($EventCalendar.settings.jsonData) {
                 // user send a json in the plugin params
-                plugin.settings.cacheJson = true;
+                $EventCalendar.settings.cacheJson = true;
 
-                eventsJson = plugin.settings.jsonData;
+                eventsJson = $EventCalendar.settings.jsonData;
                 getEventsData(eventsJson, limit, year, month, day, direction);
 
-            } else if (!plugin.settings.cacheJson || !direction) {
+            } else if (!$EventCalendar.settings.cacheJson || !direction) {
                 // first load: load json and save it to future filters
-                $.getJSON(plugin.settings.eventsjson + "?limit=" + limit + "&year=" + year + "&month=" + month + "&day=" + day, function(data) {
+                $.getJSON($EventCalendar.settings.eventsjson + "?limit=" + limit + "&year=" + year + "&month=" + month + "&day=" + day, function(data) {
                     eventsJson = data; // save data to future filters
                     getEventsData(eventsJson, limit, year, month, day, direction);
                 }).error(function() {
@@ -577,22 +574,22 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         };
 
         var getEventsData = function(data, limit, year, month, day, direction) {
-            var directionLeftMove = "-=" + plugin.directionLeftMove;
+            var directionLeftMove = "-=" + $EventCalendar.directionLeftMove;
             var eventContentHeight = "auto";
 
             var subtitle = $element.find('.eventsCalendar-list-wrap .eventsCalendar-subtitle')
             if (!direction) {
                 // first load
-                subtitle.html(plugin.settings.textNextEvents);
+                subtitle.html($EventCalendar.settings.textNextEvents);
                 eventContentHeight = "auto";
                 directionLeftMove = "-=0";
             } else {
                 var displayDate = new Date(year, month, day, 0, 0, 0);
-                var headerText = (day !== '') ? displayDate.toString(plugin.settings.textEventHeaderDayView) : displayDate.toString(plugin.settings.textEventHeaderMonthView);
+                var headerText = (day !== '') ? displayDate.toString($EventCalendar.settings.textEventHeaderDayView) : displayDate.toString($EventCalendar.settings.textEventHeaderMonthView);
                 subtitle.html(headerText);
 
                 if (direction === 'prev') {
-                    directionLeftMove = "+=" + plugin.directionLeftMove;
+                    directionLeftMove = "+=" + $EventCalendar.directionLeftMove;
                 } else if (direction === 'day' || direction === 'month') {
                     directionLeftMove = "+=0";
                     eventContentHeight = 0;
@@ -600,10 +597,10 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             }
 
             $element.find('.eventsCalendar-list').animate({
-                opacity: plugin.settings.moveOpacity,
+                opacity: $EventCalendar.settings.moveOpacity,
                 left: directionLeftMove,
                 height: eventContentHeight
-            }, plugin.settings.moveSpeed, function() {
+            }, $EventCalendar.settings.moveSpeed, function() {
                 $element.find('.eventsCalendar-list').css({'left':0, 'height': 'auto'}).hide();
 
                 var events = [];
@@ -615,11 +612,11 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
                     // show or hide event description
                     var eventDescClass = '';
-                    if(!plugin.settings.showDescription) {
+                    if(!$EventCalendar.settings.showDescription) {
                         eventDescClass = 'hidden';
                     }
                     var eventLinkTarget = "_self";
-                    if(plugin.settings.openEventInNewWindow) {
+                    if($EventCalendar.settings.openEventInNewWindow) {
                         eventLinkTarget = '_target';
                     }
 
@@ -654,22 +651,22 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
                 // there is no events on this period
                 if (!events.length) {
-                    events.push('<li class="eventsCalendar-noEvents"><p>' + plugin.settings.textNoEvents + '</p></li>');
+                    events.push('<li class="eventsCalendar-noEvents"><p>' + $EventCalendar.settings.textNoEvents + '</p></li>');
                 }
                 $element.find('.eventsCalendar-loading').hide();
 
                 $element.find('.eventsCalendar-list')
                     .html(events.join(''));
 
-                if (plugin.settings.collapsible)
+                if ($EventCalendar.settings.collapsible)
                     $element.find('.eventDesc').hide();
 
                 $element.find('.eventsCalendar-list').animate({
                     opacity: 1,
                     height: "toggle"
-                }, plugin.settings.moveSpeed);
+                }, $EventCalendar.settings.moveSpeed);
             });
-            setCalendarWidth();
+            _setCalendarWidth();
         };
 
         var changeMonth = function() {
@@ -678,17 +675,17 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
                 var lastMonthMove;
                 if ($(this).hasClass('next')) {
-                    dateSlider("next");
+                    _changeCalendarMonth("next");
                     lastMonthMove = '-=' + directionLeftMove;
                 } else {
-                    dateSlider("prev");
+                    _changeCalendarMonth("prev");
                     lastMonthMove = '+=' + directionLeftMove;
                 }
 
                 $element.find('.eventsCalendar-monthWrap.oldMonth').animate({
-                    opacity : plugin.settings.moveOpacity,
+                    opacity : $EventCalendar.settings.moveOpacity,
                     left    : lastMonthMove
-                }, plugin.settings.moveSpeed, function() {
+                }, $EventCalendar.settings.moveSpeed, function() {
                     $element.find('.eventsCalendar-monthWrap.oldMonth').remove();
                 });
             });
@@ -709,64 +706,59 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 .html("<span class='eventsCalendar-loading error'>" +
                     msg +
                     " " +
-                    plugin.settings.eventsjson +
+                    $EventCalendar.settings.eventsjson +
                     "</span>");
         };
 
-        /* ========================================== */
-        /* The above still needs to be refactored     */
-        /* ========================================== */
+        $EventCalendar.settings = {};
 
-
+        var _initialiseLoadingMessage = function() {
+            $element.addClass('eventCalendar-wrap').append("<div class='eventsCalendar-list-wrap'><p class='eventsCalendar-subtitle'></p><span class='eventsCalendar-loading'>loading...</span><div class='eventsCalendar-list-content'><ul class='eventsCalendar-list'></ul></div></div>");
         };
 
+        var _initialiseContentScrolling = function() {
+            if ($EventCalendar.settings.eventsScrollable) {
+                $element.find('.eventsCalendar-list-content').addClass('scrollable');
+            }
         };
 
-        // Resize calendar width on window resize
-        var setCalendarWidth = function() {
+        /**
+         * Resize calendar width on window resize
+         * @private
+         */
+        var _setCalendarWidth = function() {
             directionLeftMove = $element.width();
             $element.find('.eventsCalendar-monthWrap').width($element.width() + 'px');
             $element.find('.eventsCalendar-list-wrap').width($element.width() + 'px');
         };
 
-        plugin._initialiseCalendarWidth = function() {
-            setCalendarWidth();
+        var _initialiseCalendarWidth = function() {
+            _setCalendarWidth();
             $(window).resize(function () {
-                setCalendarWidth();
+                _setCalendarWidth();
             });
         };
 
-        plugin._initialiseContentSrolling = function() {
-            if (plugin.settings.eventsScrollable) {
-                $element.find('.eventsCalendar-list-content').addClass('scrollable');
-            }
-        };
-
-        plugin._initialiseLoadingMessage = function() {
-            $element.addClass('eventCalendar-wrap').append("<div class='eventsCalendar-list-wrap'><p class='eventsCalendar-subtitle'></p><span class='eventsCalendar-loading'>loading...</span><div class='eventsCalendar-list-content'><ul class='eventsCalendar-list'></ul></div></div>");
-        };
-
         var _initialise = function() {
-            plugin.settings = $.extend({}, $.fn.eventCalendar.defaults, options);
+            $EventCalendar.settings = $.extend({}, $.fn.eventCalendar.defaults, options);
 
-            plugin._initialiseLoadingMessage();
-            plugin._initialiseContentSrolling();
-            plugin._initialiseCalendarWidth();
+            _initialiseLoadingMessage();
+            _initialiseContentScrolling();
+            _initialiseCalendarWidth();
 
             // show current month
             dateSlider("current");
 
-            var year = $element.attr('data-current-year');
-            var month = $element.attr('data-current-month');
-            var date = new Date();
-            var day = "" + date.getDate();
+            var year = parseInt($element.attr('data-current-year'), 10);
+            var month = parseInt($element.attr('data-current-month'), 10);
+            var day = Date.today().getDate();
 
-            if (plugin.settings.initialEventList && plugin.settings.initialEventList === 'day') {
-                getEvents(plugin.settings.eventsLimit, year, month, day, 'day');
-            } else if (plugin.settings.initialEventList && plugin.settings.initialEventList === 'month') {
-                getEvents(plugin.settings.eventsLimit, year, month, false, 'month');
+            if ($EventCalendar.settings.initialEventList && $EventCalendar.settings.initialEventList === 'day') {
+                getEvents($EventCalendar.settings.eventsLimit, year, month, day, 'day');
+            } else if ($EventCalendar.settings.initialEventList && $EventCalendar.settings.initialEventList === 'month') {
+                getEvents($EventCalendar.settings.eventsLimit, year, month, false, 'month');
             } else {
-                getEvents(plugin.settings.eventsLimit, false, false, false, false);
+                getEvents($EventCalendar.settings.eventsLimit, false, false, false, false);
             }
 
             changeMonth();
@@ -776,7 +768,6 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 var year = parseInt($element.attr('data-current-year'), 10);
                 var month = parseInt($element.attr('data-current-month'), 10);
                 var day = $(this).parent().attr('rel');
-
                 getEvents(false, year, month, day, "day");
             });
 
@@ -785,11 +776,11 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 var year = $element.attr('data-current-year');
                 var month = $element.attr('data-current-month');
 
-                getEvents(plugin.settings.eventsLimit, year, month, false, "month");
+                getEvents($EventCalendar.settings.eventsLimit, year, month, false, "month");
             });
 
             $element.find('.eventsCalendar-list').on('click', '.eventTitle', function(e){
-                if (plugin.settings.collapsible && plugin.settings.showDescription) {
+                if ($EventCalendar.settings.collapsible && $EventCalendar.settings.showDescription) {
                     e.preventDefault();
                     var desc = $(this).parent().find('.eventDesc');
 
@@ -799,14 +790,14 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
                         // create a button to go to event url
                         if (eventUrl && eventUrl.length > 0) {
-                            desc.append('<a href="' + eventUrl + '" target="'+eventTarget+'" class="bt">'+plugin.settings.textGoToEventUrl+'</a>');
+                            desc.append('<a href="' + eventUrl + '" target="'+eventTarget+'" class="bt">'+$EventCalendar.settings.textGoToEventUrl+'</a>');
                         }
                     }
 
                     if (desc.is(':visible')) {
                         desc.slideUp();
                     } else {
-                        if(plugin.settings.onlyOneDescription) {
+                        if($EventCalendar.settings.onlyOneDescription) {
                             $element.find('.eventDesc').slideUp();
                         }
                         desc.slideDown();
@@ -816,7 +807,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         };
 
         _initialise();
-    };
+    }
 
     //noinspection JSUnresolvedVariable
     /**
@@ -833,7 +824,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             if (element.data('eventCalendar')) { return; }
 
             // pass options to plugin constructor
-            var eventCalendar = new $.eventCalendar(this, options);
+            var eventCalendar = new EventCalendar(this, options);
 
             // Store plugin object in this element's data
             element.data('eventCalendar', eventCalendar);
@@ -882,5 +873,6 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
     $.EventRecurrence = EventRecurrence;
     $.EventInstance = EventInstance;
     $.EventItem = EventItem;
+    $.EventCalendar = EventCalendar;
 
 }(jQuery));
