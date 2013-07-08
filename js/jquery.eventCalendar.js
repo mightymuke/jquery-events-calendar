@@ -9,29 +9,31 @@
 
 /*
     JSON data format:
-        startDate        : event start date - either in timestamp format or 'YYYY-MM-DD HH:MM:SS'
-        endDate          : event end date - used if event spans a number of days (defaults to startDate)
-        listingStartDate : listing start date for this event (defaults to startDate)
-        listingEndDate   : listing end date for this event (defaults to endDate)
-        recurrence       : event recurring type
-                         : - JSON format:
-                         :     type - the type of repetition: 'day', 'week', 'month', 'year'
-                         :     interval - the interval between events in the "type" units
-                         :     day and count2 - define a day of a month (first Monday, third Friday, etc)
-                         :     frequency - an array of week days (Sunday is 0)
-                         :     end - when the recurrence should end - either 'none' (default), number of times, or a date
-                         : - Examples of the rec_type data:
-                         :     { type: 'day', interval: 3 } - every three days
-                         :     { type: 'month', interval: 2 } - every two months
-                         :     { type: 'month', interval: 1, ???? _1_2_ - second Monday of each month
-                         :     { type: 'week', interval: 2, frequency: [1,5] } - Monday and Friday of each second week
-        classDetail      : event class - used to generate a class for styling the detail section
-        title            : event name - becomes the header line
-        description      : event description - becomes the detail (optionally hidden)
-        url              : url of page containing event details
+        startDate           : event start date - either in timestamp format or 'YYYY-MM-DD HH:MM:SS'
+        endDate             : event end date - used if event spans a number of days (defaults to startDate)
+        listingStartOffset  : number of days offset to start the event listing from (-'ve is previous, 0 is event date, +'ve is future) (defaults to 0)
+        listingNumberOfDays : number of days to display listing for this event (-'ve is invalid, 0 is no display, 1 is default)
+        recurrence          : event recurring type
+                            : - JSON format:
+                            :     type - the type of repetition: 'day', 'week', 'month', 'year'
+                            :     interval - the interval between events in the "type" units
+                            :     day and count2 - define a day of a month (first Monday, third Friday, etc)
+                            :     frequency - an array of week days (Sunday is 0)
+                            :     end - when the recurrence should end - either 'none' (default), number of times, or a date
+                            : - Examples of the rec_type data:
+                            :     { type: 'day', interval: 3 } - every three days
+                            :     { type: 'month', interval: 2 } - every two months
+                            :     { type: 'month', interval: 1, ???? _1_2_ - second Monday of each month
+                            :     { type: 'week', interval: 2, frequency: [1,5] } - Monday and Friday of each second week
+        classEvent          : event class - used for styling the event (no default)
+        classTitle          : title class - used for styling the event title (additional to eventTitle)
+        classDescription    : description class - used for styling the event description (additional to eventDescription)
+        title               : event name - becomes the header line
+        description         : event description - becomes the detail (optionally hidden)
+        url                 : url of page containing event details
     Obsolete:
-        date             : event date either in timestamp format or 'YYYY-MM-DD HH:MM:SS'
-        type             : event class - used to generate a class for styling the detail section
+        date                : event date either in timestamp format or 'YYYY-MM-DD HH:MM:SS'
+        type                : event class - used to generate a class for styling the detail section
 */
 
 /**
@@ -183,8 +185,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
         $EventInstance.eventStartDate = null;
         $EventInstance.eventEndDate = null;
-        $EventInstance.listingStartDate = null;
-        $EventInstance.listingEndDate = null;
+        $EventInstance.listingStartOffset = 0;
+        $EventInstance.listingNumberOfDays = 1;
         $EventInstance.title = null;
         $EventInstance.description = null;
         $EventInstance.url = null;
@@ -208,8 +210,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         $EventItem.recurrence = null;
         $EventItem.eventStartDate = null;
         $EventItem.eventEndDate = null;
-        $EventItem.listingStartDate = null;
-        $EventItem.listingEndDate = null;
+        $EventItem.listingStartOffset = 0;
+        $EventItem.listingNumberOfDays = 1;
         $EventItem.title = null;
         $EventItem.description = null;
         $EventItem.url = null;
@@ -253,8 +255,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 ei = new EventInstance();
                 ei.eventStartDate = eventStartDate;
                 ei.eventEndDate = eventEndDate;
-                ei.listingStartDate = (new Date($EventItem.listingStartDate)).addSeconds(dateDifference);
-                ei.listingEndDate = (new Date($EventItem.listingEndDate)).addSeconds(dateDifference);
+                ei.listingStartOffset = $EventItem.listingStartOffset;
+                ei.listingNumberOfDays = $EventItem.listingNumberOfDays;
                 ei.title = $EventItem.title;
                 ei.description = $EventItem.description;
                 ei.url = $EventItem.url;
@@ -274,8 +276,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             $EventItem.recurrence = null;
             $EventItem.eventStartDate = null;
             $EventItem.eventEndDate = null;
-            $EventItem.listingStartDate = null;
-            $EventItem.listingEndDate = null;
+            $EventItem.listingStartOffset = 0;
+            $EventItem.listingNumberOfDays = 1;
             $EventItem.title = null;
             $EventItem.description = null;
             $EventItem.url = null;
@@ -339,8 +341,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 $EventItem.eventStartDate = event.date ? _newDate(event.date, dateFormat) : null;
             }
             $EventItem.eventEndDate = event.endDate ? _newDate(event.endDate, dateFormat) : _newDate($EventItem.eventStartDate);
-            $EventItem.listingStartDate = event.listingStartDate ? _newDate(event.listingStartDate, dateFormat) : _newDate($EventItem.eventStartDate);
-            $EventItem.listingEndDate = event.listingEndDate ? _newDate(event.listingEndDate, dateFormat) : _newDate($EventItem.eventEndDate);
+            $EventItem.listingStartOffset = event.listingStartOffset || 0;
+            $EventItem.listingNumberOfDays = event.listingNumberOfDays || 1;
 
             $EventItem.title = event.title;
             $EventItem.description = event.description;
@@ -553,72 +555,46 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             $eventsCalendarSlider.height($eventsCalendarMonthWrap.height() + 'px');
         };
 
-        $EventCalendar.addEventToListing = function(eventItem, year, month) {
-            if ((!eventItem) || (!highlighter)) { return; }
-            var specificYear = year || -1;
-            var specificMonth = month || -1;
-
-            var eventInstance = eventItem.getFirstEventInstance(specificYear, specificMonth);
-            while (eventInstance) {
-                //var dateToBeChecked = new Date(eventInstance.listingStartDate);
-                //while (dateToBeChecked.compareTo(eventInstance.listingEndDate) <= 0) {
-                //    if (((specificYear === -1) || (dateToBeChecked.getFullYear() === specificYear)) &&
-                //            ((specificMonth === -1) || (dateToBeChecked.getMonth() === specificMonth))) {
-                        //highlighter(dateToBeChecked.getDate());
-                //   }
-                //    dateToBeChecked.addDays(1);
-               // }
-                eventInstance = eventItem.getNextEventInstance(specificYear, specificMonth);
-            }
-
-
-
-            // pass in limit and dont exceed  (ie, max limit - number items)
-            // if month or day exist then only show matched events
-            // Need to check if date between listing dates, not event dates
-            // Need to add recursion
-/*
-                if (plugin.eventIsCurrent(event, year, month, day)) {
-                    // if initial load then load only future events
-                    if (month === false && event.eventDate < new Date()) {
-
-                    } else {
-                        var eventStringDate = event.eventDay + "/" + event.eventMonthToShow + "/" + event.eventYear;
-                        //var eventTitleStyle = (plugin.eventIsToday(event, year, month, day)) ? "current" : "";
-                        var eventTitleStyle = "current";
-                        if (event.url) {
-                            var eventTitle = '<a href="' + event.url + '" target="' + eventLinkTarget + '" class="eventTitle ' + eventTitleStyle + '">' + event.title + '</a>';
-                        } else {
-                            var eventTitle = '<span class="eventTitle ' + eventTitleStyle + '">' + event.title + '</span>';
-                        }
-                        events.push('<li id="' + key + '" class="' + event.classDetail + '"><time datetime="' + event.eventDate + '"><em>' + eventStringDate + '</em><small>' + event.eventHour + ":" + event.eventMinute + '</small></time>' + eventTitle + '<div class="eventDesc ' + eventDescClass + '">' + event.description + '</div></li>');
-                    }
-                }
-                */
-            return 1; // return number of items added
-        };
-
         /**
-         * Highlights days on the calendar that contain an event
-         * @param {EventItem} eventItem           The event to add to the calendar
-         * @param {function(number)} highlighter  Callback to process when a day needs to be highlighted
-         * @param {number=} year                  The year to constrain the events to (All Years=-1) [Optional]
-         * @param {number=} month                 The month to constrain the events to (Jan=0, All Months=-1) [Optional]
+         * Adds an event to the calendar
+         * @param {EventItem} eventItem            The event to add to the calendar
+         * @param {function(number)=} highlighter  Callback to highlight a day in the calender [Optional]
+         * @param {function(number)=} lister       Callback to add an instance of the event to the list [Optional]
+         * @param {number=} year                   The year to constrain the events to (All Years=-1) [Optional]
+         * @param {number=} month                  The month to constrain the events to (Jan=0, All Months=-1) [Optional]
          */
-        $EventCalendar.addEventToCalendar = function(eventItem, highlighter, year, month) {
+        $EventCalendar.addEventToCalendar = function(eventItem, highlighter, lister, year, month) {
             if ((!eventItem) || (!highlighter)) { return; }
             var specificYear = year || -1;
             var specificMonth = month || -1;
 
             var eventInstance = eventItem.getFirstEventInstance(specificYear, specificMonth);
             while (eventInstance) {
+
                 var dateToBeChecked = new Date(eventInstance.eventStartDate);
                 while (dateToBeChecked.compareTo(eventInstance.eventEndDate) <= 0) {
                     if (((specificYear === -1) || (dateToBeChecked.getFullYear() === specificYear)) &&
                             ((specificMonth === -1) || (dateToBeChecked.getMonth() === specificMonth))) {
-                        highlighter(dateToBeChecked.getDate());
+                        if (highlighter && (typeof highlighter === 'function')) {
+                            highlighter(dateToBeChecked.getDate());
+                        }
                     }
                     dateToBeChecked.addDays(1);
+
+                    //
+                    // lister(eventInstance,)
+                    // if month or day exist then only show matched events
+                    // Need to check if date between listing dates, not event dates
+                    // Need to add recursion
+                    /*
+                     if (plugin.eventIsCurrent(event, year, month, day)) {
+                     // if initial load then load only future events
+                     if (month === false && event.eventDate < new Date()) {
+
+                     } else {
+                     }
+*/
+
                 }
                 eventInstance = eventItem.getNextEventInstance(specificYear, specificMonth);
             }
@@ -666,7 +642,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                     return compare;
                 }); // sort event by dates
 
-                // each event
+                // Add each event to the calendar
                 if (data.length) {
 
                     var eventLinkTarget = "_self";
@@ -678,14 +654,16 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                     $.each(data, function(key, event) {
                         var eventItem = new EventItem(event, $EventCalendar.settings.jsonDateFormat);
 
-                        if (limit === 0 || limit > itemsInList) {
-                            itemsInList += $EventCalendar.addEventToListing(eventItem);
-                        }
-
                         // Add to calendar
-                        $EventCalendar.addEventToCalendar(eventItem, function(dayOfMonth) {
-                            $element.find('.currentMonth .eventsCalendar-daysList #dayList_' + dayOfMonth).addClass('dayWithEvents');
-                        }, year, month);
+                        $EventCalendar.addEventToCalendar(
+                            eventItem,
+                            function(dayOfMonth) {
+                                $element.find('.currentMonth .eventsCalendar-daysList #dayList_' + dayOfMonth).addClass('dayWithEvents');
+                            },
+                            function(eventInstance) {
+                                if (limit === 0 || itemsInList < limit) {
+                                    itemsInList += 1;
+
                                     var eventClass = eventInstance.classEvent ? ' class="' + eventInstance.classEvent + '"' : '';
 
                                     var titleClass = ' class="eventTitle';
@@ -706,6 +684,11 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                                     }
 
                                     events.push('<li id="' + key + '"' + eventClass + '>' + eventTitle + '<div' + descriptionClass + '>' + event.description + '</div></li>');
+                                }
+                            },
+                            year,
+                            month
+                        );
                     });
                 }
 
