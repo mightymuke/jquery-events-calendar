@@ -181,11 +181,16 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
     function EventInstance() {
         var $EventInstance = this;
 
-        $EventInstance.type = 'none';
         $EventInstance.eventStartDate = null;
         $EventInstance.eventEndDate = null;
         $EventInstance.listingStartDate = null;
         $EventInstance.listingEndDate = null;
+        $EventInstance.title = null;
+        $EventInstance.description = null;
+        $EventInstance.url = null;
+        $EventInstance.classEvent = null;
+        $EventInstance.classTitle = null;
+        $EventInstance.classDescription = null;
     }
 
     /**
@@ -205,6 +210,12 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         $EventItem.eventEndDate = null;
         $EventItem.listingStartDate = null;
         $EventItem.listingEndDate = null;
+        $EventItem.title = null;
+        $EventItem.description = null;
+        $EventItem.url = null;
+        $EventItem.classEvent = null;
+        $EventItem.classTitle = null;
+        $EventItem.classDescription = null;
 
         /**
          * Gets the recurrence for this event (if no recurrence, returns the event)
@@ -240,11 +251,16 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             var ei = null;
             if (eventStartDate) {
                 ei = new EventInstance();
-                ei.type = $EventItem.type;
                 ei.eventStartDate = eventStartDate;
                 ei.eventEndDate = eventEndDate;
                 ei.listingStartDate = (new Date($EventItem.listingStartDate)).addSeconds(dateDifference);
                 ei.listingEndDate = (new Date($EventItem.listingEndDate)).addSeconds(dateDifference);
+                ei.title = $EventItem.title;
+                ei.description = $EventItem.description;
+                ei.url = $EventItem.url;
+                ei.classEvent = $EventItem.classEvent;
+                ei.classTitle = $EventItem.classTitle;
+                ei.classDescription = $EventItem.classDescription;
             }
 
             return ei;
@@ -260,6 +276,12 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             $EventItem.eventEndDate = null;
             $EventItem.listingStartDate = null;
             $EventItem.listingEndDate = null;
+            $EventItem.title = null;
+            $EventItem.description = null;
+            $EventItem.url = null;
+            $EventItem.classEvent = null;
+            $EventItem.classTitle = null;
+            $EventItem.classDescription = null;
         };
 
         /**
@@ -320,10 +342,13 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             $EventItem.listingStartDate = event.listingStartDate ? _newDate(event.listingStartDate, dateFormat) : _newDate($EventItem.eventStartDate);
             $EventItem.listingEndDate = event.listingEndDate ? _newDate(event.listingEndDate, dateFormat) : _newDate($EventItem.eventEndDate);
 
-            // Cater for obsolete type property
-            if (!event.classDetail || event.classDetail.length < 1) {
-                event.classDetail = event.type;
-            }
+            $EventItem.title = event.title;
+            $EventItem.description = event.description;
+            $EventItem.url = event.url;
+
+            $EventItem.classEvent = event.classEvent;
+            $EventItem.classTitle = event.classTitle;
+            $EventItem.classDescription = event.classDescription || event.type;
         };
 
         /**
@@ -661,17 +686,36 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                         $EventCalendar.addEventToCalendar(eventItem, function(dayOfMonth) {
                             $element.find('.currentMonth .eventsCalendar-daysList #dayList_' + dayOfMonth).addClass('dayWithEvents');
                         }, year, month);
+                                    var eventClass = eventInstance.classEvent ? ' class="' + eventInstance.classEvent + '"' : '';
+
+                                    var titleClass = ' class="eventTitle';
+                                    titleClass += eventInstance.classTitle ? ' ' + eventInstance.classTitle : '';
+                                    titleClass += EventItem.datePeriodIsCurrent(eventInstance.startDate, eventInstance.endDate, year, month) ? ' current' : '';
+                                    titleClass += '"';
+
+                                    var descriptionClass = ' class="eventDescription';
+                                    descriptionClass += eventInstance.classDescription ? ' ' + eventInstance.classDescription : '';
+                                    descriptionClass += (!$EventCalendar.settings.showDescription) ? ' hidden' : '';
+                                    descriptionClass += '"';
+
+                                    var eventTitle;
+                                    if (eventInstance.url) {
+                                        eventTitle = '<a href="' + eventInstance.url + '" target="' + eventLinkTarget + '"' + titleClass + '>' + eventInstance.title + '</a>';
+                                    } else {
+                                        eventTitle = '<span' + titleClass + '>' + eventInstance.title + '</span>';
+                                    }
+
+                                    events.push('<li id="' + key + '"' + eventClass + '>' + eventTitle + '<div' + descriptionClass + '>' + event.description + '</div></li>');
                     });
                 }
 
-                // there is no events on this period
+                // Add message if there are no events for this period
                 if (!events.length) {
                     events.push('<li class="eventsCalendar-noEvents"><p>' + $EventCalendar.settings.textNoEvents + '</p></li>');
                 }
-                $element.find('.eventsCalendar-loading').hide();
 
-                $element.find('.eventsCalendar-list')
-                    .html(events.join(''));
+                $element.find('.eventsCalendar-loading').hide();
+                $element.find('.eventsCalendar-list').html(events.join(''));
 
                 if ($EventCalendar.settings.collapsible) {
                     $element.find('.eventDescription').hide();
