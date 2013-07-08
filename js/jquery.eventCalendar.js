@@ -610,7 +610,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 eventContentHeight = "auto";
                 directionLeftMove = "-=0";
             } else {
-                var displayDate = new Date(year, month, day, 0, 0, 0);
+                var displayDate = new Date(year, month, (day !== '') ? day : 1, 0, 0, 0);
                 var headerText = (day !== '') ? displayDate.toString($EventCalendar.settings.textEventHeaderDayView) : displayDate.toString($EventCalendar.settings.textEventHeaderMonthView);
                 subtitle.html(headerText);
 
@@ -627,7 +627,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 left: directionLeftMove,
                 height: eventContentHeight
             }, $EventCalendar.settings.moveSpeed, function() {
-                $element.find('.eventsCalendar-list').css({'left':0, 'height': 'auto'}).hide();
+                $element.find('.eventsCalendar-list').css({'left': 0, 'height': 'auto'}).hide();
 
                 var events = [];
 
