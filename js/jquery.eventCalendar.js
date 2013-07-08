@@ -475,7 +475,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 $eventsCalendarSlider.append($eventsCalendarMonthWrap);
                 $eventsCalendarSlider.append($eventsCalendarArrows);
             } else {
-                $element.find('.eventsCalendar-slider').append($eventsCalendarMonthWrap);
+                $eventsCalendarSlider = $element.find('.eventsCalendar-slider');
+                $eventsCalendarSlider.append($eventsCalendarMonthWrap);
             }
 
             $element.find('.eventsCalendar-monthWrap.currentMonth').removeClass('currentMonth').addClass('oldMonth');
@@ -524,7 +525,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             }
             $eventsCalendarDaysList.append(calendarCells.join(''));
 
-            $eventsCalendarSlider.css('height', $eventsCalendarMonthWrap.height() + 'px');
+            $eventsCalendarSlider.height($eventsCalendarMonthWrap.height() + 'px');
         };
 
         $EventCalendar.addEventToListing = function(eventItem, year, month) {
