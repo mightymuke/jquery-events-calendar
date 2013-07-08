@@ -238,7 +238,7 @@
 				color:#0E8EAB;
 			}
 			.eventsCalendar-list li a.eventTitle:hover { text-decoration:underline;}
-		.eventsCalendar-list li .eventDesc {
+		.eventsCalendar-list li .eventDescription {
 			clear: both;
 			margin:0 0 5px 0;
 			font-size:80%;

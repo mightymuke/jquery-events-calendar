@@ -644,11 +644,6 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 // each event
                 if (data.length) {
 
-                    // show or hide event description
-                    var eventDescClass = '';
-                    if(!$EventCalendar.settings.showDescription) {
-                        eventDescClass = 'hidden';
-                    }
                     var eventLinkTarget = "_self";
                     if($EventCalendar.settings.openEventInNewWindow) {
                         eventLinkTarget = '_target';
@@ -678,8 +673,9 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 $element.find('.eventsCalendar-list')
                     .html(events.join(''));
 
-                if ($EventCalendar.settings.collapsible)
-                    $element.find('.eventDesc').hide();
+                if ($EventCalendar.settings.collapsible) {
+                    $element.find('.eventDescription').hide();
+                }
 
                 $element.find('.eventsCalendar-list').animate({
                     opacity: 1,
@@ -791,7 +787,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             $element.find('.eventsCalendar-list').on('click', '.eventTitle', function(e){
                 if ($EventCalendar.settings.collapsible && $EventCalendar.settings.showDescription) {
                     e.preventDefault();
-                    var desc = $(this).parent().find('.eventDesc');
+                    var desc = $(this).parent().find('.eventDescription');
 
                     if (!desc.find('a').size()) {
                         var eventUrl = $(this).attr('href');
@@ -807,7 +803,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                         desc.slideUp();
                     } else {
                         if($EventCalendar.settings.onlyOneDescription) {
-                            $element.find('.eventDesc').slideUp();
+                            $element.find('.eventDescription').slideUp();
                         }
                         desc.slideDown();
                     }
