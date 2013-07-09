@@ -219,6 +219,23 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         $EventItem.classTitle = null;
         $EventItem.classDescription = null;
 
+        var _MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+        /**
+         * Returns the difference (in days) between two dates ignoring daylight savings
+         * @param  {Date} aDate   The date to compare to
+         * @param  {Date} bDate   The date to compate with
+         * @return {number}       The number of days between the two dates
+         * @private
+         */
+        var _dateDiffInDays = function (aDate, bDate) {
+            // Discard the time and time-zone information.
+            var utc1 = Date.UTC(aDate.getFullYear(), aDate.getMonth(), aDate.getDate());
+            var utc2 = Date.UTC(bDate.getFullYear(), bDate.getMonth(), bDate.getDate());
+
+            return Math.floor((utc2 - utc1) / _MS_PER_DAY);
+        };
+
         /**
          * Gets the recurrence for this event (if no recurrence, returns the event)
          * @param  {number=} year    The year to constrain the events to (All Years=-1) [Optional]
@@ -236,16 +253,16 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
             // Get initial event dates
             var eventStartDate = $EventItem.recurrence.getRecurrenceDate($EventItem.startDate, _index);
-            var dateDifference = Math.round((eventStartDate - $EventItem.startDate) / 1000);
-            var eventEndDate = (new Date($EventItem.endDate)).addSeconds(dateDifference);
+            var dateDifference = _dateDiffInDays($EventItem.startDate, eventStartDate);
+            var eventEndDate = (new Date($EventItem.endDate)).addDays(dateDifference);
 
             // Check event dates are within required period
             if (eventStartDate && (specificYear >= 0 || specificMonth >= 0)) {
                 while (!EventItem.datePeriodIsCurrent(eventStartDate, eventEndDate, specificYear, specificMonth)) {
                     eventStartDate = $EventItem.recurrence.getNextRecurrenceDate(eventStartDate);
                     if (!eventStartDate) { break; }
-                    dateDifference = Math.round((eventStartDate - $EventItem.startDate) / 1000);
-                    eventEndDate = (new Date($EventItem.endDate)).addSeconds(dateDifference);
+                    dateDifference = _dateDiffInDays($EventItem.startDate, eventStartDate);
+                    eventEndDate = (new Date($EventItem.endDate)).addDays(dateDifference);
                 }
             }
 
