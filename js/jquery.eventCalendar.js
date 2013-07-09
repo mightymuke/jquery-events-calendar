@@ -434,6 +434,43 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
     };
 
     /**
+     * Returns true if this event instance is after the required month / year
+     * @param  {EventInstance} eventInstance  The event instance to check
+     * @param  {number=} year                 The year to compare the event to (All Years=-1) [Optional]
+     * @param  {number=} month                The month to compare the event to (Jan=0, All Months=-1) [Optional]
+     * @param  {number=} day                  The day to compare the event to (Sun=0, All Days=-1) [Optional]
+     * @returns {boolean}
+     */
+    EventItem.datePeriodIsInTheFuture = function(eventInstance, year, month, day) {
+        var listingStartDate = eventInstance.startDate.clone();
+        listingStartDate = listingStartDate.addDays(eventInstance.listingStartOffset);
+
+        var earliestEventDate = eventInstance.startDate.isBefore(listingStartDate) ? eventInstance.startDate : listingStartDate;
+        var start = 0;
+        var check = 0;
+
+        // Check Year
+        if (year >= 0) {
+            start += earliestEventDate.getFullYear() * 10000;
+            check += year * 10000;
+        }
+
+        // Check Month
+        if (month >= 0) {
+            start += earliestEventDate.getMonth() * 100;
+            check += month * 100;
+        }
+
+        // Check Day
+        if (day >= 0) {
+            start += earliestEventDate.getDate();
+            check += day;
+        }
+
+        return (check < start);
+    };
+
+    /**
      * Event Calendar - the main calendar class
      * @param {object} element   The element in the DOM that the calendar is to be attached to
      * @param {object=} options  Parameter overrides - see defaults for complete list [Optional]
@@ -525,7 +562,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                             function(eventInstance, dayOfMonth) {
                                 $element.find('.currentMonth .eventsCalendar-daysList #dayList_' + dayOfMonth).addClass('dayWithEvents');
                             },
-                            function(eventInstance, dayOfMonth) {
+                            function(eventInstance) {
                                 if (eventInstance.listingNumberOfDays < 1) { return; }
                                 if (limit !== 0 && itemsInList >= limit) { return; }
 
@@ -537,7 +574,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
                                 var eventIsCurrent = EventItem.datePeriodIsCurrent(eventInstance.startDate, eventInstance.endDate, year, month, dayToCheck);
 
-                                // Check if
+                                // Check if the date is either in the event period or in the listing period
                                 if (!eventIsCurrent && !EventItem.datePeriodIsCurrent(listingStartDate, listingEndDate, year, month, dayToCheck)) { return; }
 
                                 var eventClass = eventInstance.classEvent ? ' class="' + eventInstance.classEvent + '"' : '';
@@ -726,22 +763,22 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             var specificMonth = month || -1;
 
             var eventInstance = eventItem.getFirstEventInstance();
-            while (eventInstance) {
-
-                var dateToBeChecked = new Date(eventInstance.startDate);
-
+            while (eventInstance && !EventItem.datePeriodIsInTheFuture(eventInstance, specificYear, specificMonth)) {
+                // Add one list item for this instance
                 if (lister && (typeof lister === 'function')) {
                     lister(eventInstance);
                 }
 
-                while (dateToBeChecked.compareTo(eventInstance.endDate) <= 0) {
-                    if (((specificYear === -1) || (dateToBeChecked.getFullYear() === specificYear)) &&
-                            ((specificMonth === -1) || (dateToBeChecked.getMonth() === specificMonth))) {
-                        if (highlighter && (typeof highlighter === 'function')) {
+                // Highlight each event day in the calendar
+                if (highlighter && (typeof highlighter === 'function')) {
+                    var dateToBeChecked = new Date(eventInstance.startDate);
+                    while (dateToBeChecked.compareTo(eventInstance.endDate) <= 0) {
+                        if (((specificYear === -1) || (dateToBeChecked.getFullYear() === specificYear)) &&
+                                ((specificMonth === -1) || (dateToBeChecked.getMonth() === specificMonth))) {
                             highlighter(eventInstance, dateToBeChecked.getDate());
                         }
+                        dateToBeChecked.addDays(1);
                     }
-                    dateToBeChecked.addDays(1);
                 }
 
                 eventInstance = eventItem.getNextEventInstance();
