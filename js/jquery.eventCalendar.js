@@ -248,8 +248,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             if ((_index > 0) && ((!$EventItem.recurrence) || ($EventItem.recurrence.type === 'none'))) {
                 return null;
             }
-            var specificYear = year || -1;
-            var specificMonth = month || -1;
+            var specificYear = (year !== undefined) ? year : -1;
+            var specificMonth = (month !== undefined) ? month : -1;
 
             // Get initial event dates
             var eventStartDate = $EventItem.recurrence.getRecurrenceDate($EventItem.startDate, _index);
@@ -759,8 +759,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
          */
         $EventCalendar.addEventToCalendar = function(eventItem, highlighter, lister, year, month) {
             if ((!eventItem) || (!highlighter)) { return; }
-            var specificYear = year || -1;
-            var specificMonth = month || -1;
+            var specificYear = (year !== undefined) ? year : -1;
+            var specificMonth = (month !== undefined) ? month : -1;
 
             var eventInstance = eventItem.getFirstEventInstance();
             while (eventInstance && !EventItem.datePeriodIsInTheFuture(eventInstance, specificYear, specificMonth)) {
