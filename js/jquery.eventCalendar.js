@@ -518,13 +518,16 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                                 listingEndDate = listingEndDate.addDays(eventInstance.listingNumberOfDays - 1);
                                 var dayToCheck = (day !== '') ? parseInt(day, 10) : -1;
 
-                                if (!EventItem.datePeriodIsCurrent(listingStartDate, listingEndDate, year, month, dayToCheck)) { return; }
+                                var eventIsCurrent = EventItem.datePeriodIsCurrent(eventInstance.startDate, eventInstance.endDate, year, month, dayToCheck);
+
+                                // Check if
+                                if (!eventIsCurrent && !EventItem.datePeriodIsCurrent(listingStartDate, listingEndDate, year, month, dayToCheck)) { return; }
 
                                 var eventClass = eventInstance.classEvent ? ' class="' + eventInstance.classEvent + '"' : '';
 
                                 var titleClass = ' class="eventTitle';
                                 titleClass += eventInstance.classTitle ? ' ' + eventInstance.classTitle : '';
-                                titleClass += EventItem.datePeriodIsCurrent(eventInstance.startDate, eventInstance.endDate, year, month, dayToCheck) ? ' current' : '';
+                                titleClass += eventIsCurrent ? ' current' : '';
                                 titleClass += '"';
 
                                 var descriptionClass = ' class="eventDescription';
