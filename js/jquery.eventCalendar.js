@@ -326,7 +326,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
             var newDate = null;
             if (typeof date === "object" && date.getMonth) {
-                newDate = new Date(date);
+                newDate = date.clone();
             } else if (typeof date === 'number') {
                 newDate = new Date(date);
             } else if ((typeof date === 'string') && dateFormat) {
@@ -764,20 +764,23 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
             var eventInstance = eventItem.getFirstEventInstance();
             while (eventInstance && !EventItem.datePeriodIsInTheFuture(eventInstance, specificYear, specificMonth)) {
-                // Add one list item for this instance
-                if (lister && (typeof lister === 'function')) {
-                    lister(eventInstance);
-                }
+                var eventDate = eventInstance.startDate;
+                if (EventItem.datePeriodIsCurrent($EventCalendar.settings.startDate, $EventCalendar.settings.endDate, eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate())) {
+                    // Add one list item for this instance
+                    if (lister && (typeof lister === 'function')) {
+                        lister(eventInstance);
+                    }
 
-                // Highlight each event day in the calendar
-                if (highlighter && (typeof highlighter === 'function')) {
-                    var dateToBeChecked = new Date(eventInstance.startDate);
-                    while (dateToBeChecked.compareTo(eventInstance.endDate) <= 0) {
-                        if (((specificYear === -1) || (dateToBeChecked.getFullYear() === specificYear)) &&
-                                ((specificMonth === -1) || (dateToBeChecked.getMonth() === specificMonth))) {
-                            highlighter(eventInstance, dateToBeChecked.getDate());
+                    // Highlight each event day in the calendar
+                    if (highlighter && (typeof highlighter === 'function')) {
+                        var dateToBeChecked = new Date(eventInstance.startDate);
+                        while (dateToBeChecked.compareTo(eventInstance.endDate) <= 0) {
+                            if (((specificYear === -1) || (dateToBeChecked.getFullYear() === specificYear)) &&
+                                    ((specificMonth === -1) || (dateToBeChecked.getMonth() === specificMonth))) {
+                                highlighter(eventInstance, dateToBeChecked.getDate());
+                            }
+                            dateToBeChecked.addDays(1);
                         }
-                        dateToBeChecked.addDays(1);
                     }
                 }
 
@@ -941,6 +944,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         eventsScrollable         : false,
         initialEventList         : false,       // false for upcoming, 'day' for today, or 'month' for this month.
         currentDate              : new Date(),
+        startDate                : new Date(1900, 0, 1, 0, 0, 0),
+        endDate                  : new Date(2999, 0, 1, 0, 0, 0),
         moveSpeed                : 500,         // speed of month move when you click on a new date
         moveOpacity              : 0.15         // month and events fadeOut to this opacity
     };
