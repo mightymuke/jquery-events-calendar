@@ -15,11 +15,12 @@
         listingNumberOfDays : number of days to display listing for this event (-'ve is invalid, 0 is no display, 1 is default)
         recurrence          : event recurring type
                             : - JSON format:
-                            :     type - the type of repetition: 'day', 'week', 'month', 'year'
+                            :     type     - the type of repetition: 'day', 'week', 'month', 'year'
                             :     interval - the interval between events in the "type" units
+                            :     end      - when the recurrence should end - either 'none' (default), number of times, or a date
+                            : coming...
                             :     day and count2 - define a day of a month (first Monday, third Friday, etc)
                             :     frequency - an array of week days (Sunday is 0)
-                            :     end - when the recurrence should end - either 'none' (default), number of times, or a date
                             : - Examples of the rec_type data:
                             :     { type: 'day', interval: 3 } - every three days
                             :     { type: 'month', interval: 2 } - every two months
@@ -60,20 +61,22 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
     /**
      * EventRecurrence - defines recurrence functionality for an event
      * @param {object} recurrence          JSON object defining recurrence properties
+     * @param {string=} dateFormat         Date format used for the event dates [Optional]
      * @param {function(string)=} onError  Function to call should an error occur
      * @constructor
      */
-    function EventRecurrence(recurrence, onError) {
+    function EventRecurrence(recurrence, dateFormat, onError) {
         var $EventRecurrence = this;
         var _error = false;
 
         $EventRecurrence.type = 'none';
         $EventRecurrence.interval = 0;
+        $EventRecurrence.end = 'none';
+        $EventRecurrence._index = 0;
 
         // TODO - add support for the following:
         //   day and count2 - define a day of a month (first Monday, third Friday, etc)
         //   frequency - an array of week days (Sunday is 0)
-        //   end - when the recurrence should end - either 'none' (default), number of times, or a date
 
         /**
          * Initialises the recurrence properties to no recurrence
@@ -82,6 +85,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         var _setRecurrenceToNone = function() {
             $EventRecurrence.type = 'none';
             $EventRecurrence.interval = 0;
+            $EventRecurrence.end = 'none';
+            $EventRecurrence._index = 0;
         };
 
         /**
@@ -115,11 +120,38 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             }
 
             $EventRecurrence.type = recurType;
+
             $EventRecurrence.interval = recurrence.interval ? parseInt(recurrence.interval, 10) : 0;
             if ((!$EventRecurrence.interval) || ($EventRecurrence.interval < 1)) {
-                _recurrenceError("Invalid recurrence interval: " + $EventRecurrence.interval);
+                _recurrenceError("Invalid recurrence interval: " + recurrence.interval);
                 return;
             }
+
+            if (recurrence.end === undefined) {
+                $EventRecurrence.end = 'none';
+            } else if (typeof recurrence.end === 'object' && recurrence.end.getMonth) {
+                $EventRecurrence.end = recurrence.end.clone();
+            } else if (typeof recurrence.end === 'number') {
+                $EventRecurrence.end = parseInt(recurrence.end, 10);
+            } else if (typeof recurrence.end === 'string') {
+                $EventRecurrence.end = recurrence.end.toLowerCase();
+                if ($EventRecurrence.end === '') {
+                    $EventRecurrence.end = 'none';
+                } else if ($EventRecurrence.end !== 'none') {
+                    if (dateFormat) {
+                        $EventRecurrence.end = (dateFormat.toLowerCase() === 'timestamp') ? new Date(parseInt(recurrence.end, 10)) : Date.parseExact(recurrence.end, dateFormat);
+                    }
+                    if (!$EventRecurrence.end) {
+                        $EventRecurrence.end = Date.parse(recurrence.end);
+                    }
+                }
+            }
+            if (!$EventRecurrence.end) {
+                _recurrenceError("Invalid end recurrence: " + recurrence.end);
+                return;
+            }
+
+            if (DEBUG) { console.log("Recurrence created: " + JSON.stringify($EventRecurrence)); }
         };
 
         /**
@@ -133,6 +165,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             if ((!date) || (index < 0)) { return null; }
 
             var recurDate = new Date(date);
+            $EventRecurrence._index = 0;
             var i = 0;
             while (i < index) {
                 recurDate = $EventRecurrence.getNextRecurrenceDate(recurDate);
@@ -140,6 +173,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 i += 1;
             }
 
+            $EventRecurrence._index = i;
             return recurDate;
         };
 
@@ -155,19 +189,32 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             switch ($EventRecurrence.type) {
             case 'day':
                 recurDate = recurDate.addDays($EventRecurrence.interval);
+                $EventRecurrence._index += 1;
                 break;
             case 'week':
                 recurDate = recurDate.addWeeks($EventRecurrence.interval);
+                $EventRecurrence._index += 1;
                 break;
             case 'month':
                 recurDate = recurDate.addMonths($EventRecurrence.interval);
+                $EventRecurrence._index += 1;
                 break;
             case 'year':
                 recurDate = recurDate.addYears($EventRecurrence.interval);
+                $EventRecurrence._index += 1;
                 break;
             default:
                 recurDate = null;
                 break;
+            }
+
+            // Check if past end recurrence
+            if ((recurDate !== null) && ($EventRecurrence.end !== 'none')) {
+                if (typeof $EventRecurrence.end === 'object' && $EventRecurrence.end.getMonth) {
+                    if (recurDate.isAfter($EventRecurrence.end)) { recurDate = null; }
+                } else if (typeof $EventRecurrence.end === 'number') {
+                    if ($EventRecurrence._index >= $EventRecurrence.end) { recurDate = null; }
+                }
             }
 
             return recurDate;
@@ -253,16 +300,18 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
             // Get initial event dates
             var eventStartDate = $EventItem.recurrence.getRecurrenceDate($EventItem.startDate, _index);
-            var dateDifference = _dateDiffInDays($EventItem.startDate, eventStartDate);
-            var eventEndDate = (new Date($EventItem.endDate)).addDays(dateDifference);
+            if (eventStartDate) {
+                var dateDifference = _dateDiffInDays($EventItem.startDate, eventStartDate);
+                var eventEndDate = (new Date($EventItem.endDate)).addDays(dateDifference);
 
-            // Check event dates are within required period
-            if (eventStartDate && (specificYear >= 0 || specificMonth >= 0)) {
-                while (!EventItem.datePeriodIsCurrent(eventStartDate, eventEndDate, specificYear, specificMonth)) {
-                    eventStartDate = $EventItem.recurrence.getNextRecurrenceDate(eventStartDate);
-                    if (!eventStartDate) { break; }
-                    dateDifference = _dateDiffInDays($EventItem.startDate, eventStartDate);
-                    eventEndDate = (new Date($EventItem.endDate)).addDays(dateDifference);
+                // Check event dates are within required period
+                if (eventStartDate && (specificYear >= 0 || specificMonth >= 0)) {
+                    while (!EventItem.datePeriodIsCurrent(eventStartDate, eventEndDate, specificYear, specificMonth)) {
+                        eventStartDate = $EventItem.recurrence.getNextRecurrenceDate(eventStartDate);
+                        if (!eventStartDate) { break; }
+                        dateDifference = _dateDiffInDays($EventItem.startDate, eventStartDate);
+                        eventEndDate = (new Date($EventItem.endDate)).addDays(dateDifference);
+                    }
                 }
             }
 
@@ -350,7 +399,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 return;
             }
 
-            $EventItem.recurrence = new EventRecurrence(event.recurrence);
+            $EventItem.recurrence = new EventRecurrence(event.recurrence, dateFormat);
 
             $EventItem.startDate = event.startDate ? _newDate(event.startDate, dateFormat) : null;
             // Cater for obsolete date property
