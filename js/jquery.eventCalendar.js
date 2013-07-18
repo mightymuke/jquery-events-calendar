@@ -559,6 +559,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         var getEventsData = function(data, limit, year, month, day, direction) {
             var directionLeftMove = "-=" + $EventCalendar.directionLeftMove;
             var eventContentHeight = "auto";
+            var dayToCheck = (day !== '') ? parseInt(day, 10) : -1;
 
             var subtitle = $element.find('.eventsCalendar-list-wrap .eventsCalendar-subtitle');
             if (!direction) {
@@ -619,7 +620,6 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                                 listingStartDate = listingStartDate.addDays(eventInstance.listingStartOffset);
                                 var listingEndDate = listingStartDate.clone();
                                 listingEndDate = listingEndDate.addDays(eventInstance.listingNumberOfDays - 1);
-                                var dayToCheck = (day !== '') ? parseInt(day, 10) : -1;
 
                                 var eventIsCurrent = EventItem.datePeriodIsCurrent(eventInstance.startDate, eventInstance.endDate, year, month, dayToCheck);
 
@@ -652,7 +652,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                                 itemsInList += 1;
                             },
                             year,
-                            month
+                            month,
+                            dayToCheck
                         );
                     });
                 }
@@ -805,19 +806,23 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
          * @param {function(EventInstance, number)=} lister       Callback to add an instance of the event to the list [Optional]
          * @param {number=} year                                  The year to constrain the events to (All Years=-1) [Optional]
          * @param {number=} month                                 The month to constrain the events to (Jan=0, All Months=-1) [Optional]
+         * @param {number=} day                                   The day to constrain the events to (-1 = no constraint) [Optional]
          */
-        $EventCalendar.addEventToCalendar = function(eventItem, highlighter, lister, year, month) {
+        $EventCalendar.addEventToCalendar = function(eventItem, highlighter, lister, year, month, day) {
             if ((!eventItem) || (!highlighter)) { return; }
             var specificYear = (year !== undefined) ? year : -1;
             var specificMonth = (month !== undefined) ? month : -1;
+            var specificDay = (day !== undefined) ? day : -1;
+            var specificDate = (specificYear < 0 || specificMonth < 0 || specificDay < 0) ? $EventCalendar.settings.startDate : new Date(specificYear, specificMonth, specificDay, 0, 0, 0);
             var itemAdded = false;
 
             var eventInstance = eventItem.getFirstEventInstance();
             while (eventInstance && !EventItem.datePeriodIsInTheFuture(eventInstance, specificYear, specificMonth)) {
-                var eventDate = eventInstance.startDate;
-                if (EventItem.datePeriodIsCurrent($EventCalendar.settings.startDate, $EventCalendar.settings.endDate, eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate())) {
+                if (eventInstance.startDate.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate) || eventInstance.endDate.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate)) {
                     // Add one list item for this instance
-                    if (lister && (typeof lister === 'function') && (!itemAdded || !$EventCalendar.settings.groupEvents)) {
+                    if (lister && (typeof lister === 'function') &&
+                            (!itemAdded || !$EventCalendar.settings.groupEvents) &&
+                            (!$EventCalendar.settings.allowPartialEvents || (specificDay < 1) || specificDate.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate))) {
                         lister(eventInstance);
                         itemAdded = true;
                     }
@@ -827,7 +832,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                         var dateToBeChecked = new Date(eventInstance.startDate);
                         while (dateToBeChecked.compareTo(eventInstance.endDate) <= 0) {
                             if (((specificYear === -1) || (dateToBeChecked.getFullYear() === specificYear)) &&
-                                    ((specificMonth === -1) || (dateToBeChecked.getMonth() === specificMonth))) {
+                                    ((specificMonth === -1) || (dateToBeChecked.getMonth() === specificMonth)) &&
+                                    (!$EventCalendar.settings.allowPartialEvents || dateToBeChecked.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate))) {
                                 highlighter(eventInstance, dateToBeChecked.getDate());
                             }
                             dateToBeChecked.addDays(1);
@@ -998,6 +1004,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         currentDate              : Date.today(),
         startDate                : new Date(1900, 0, 1, 0, 0, 0),
         endDate                  : new Date(2999, 0, 1, 0, 0, 0),
+        allowPartialEvents       : false,
         moveSpeed                : 500,         // speed of month move when you click on a new date
         moveOpacity              : 0.15         // month and events fadeOut to this opacity
     };

@@ -39,6 +39,7 @@ Thanks to [jaime8111](https://github.com/jaime8111) for an awesome plugin.
 | `currentDate`              | `new Date()`                           | Initial date for calender (this is mainly used for testing) |
 | `startDate`                | `new Date(1900, 0, 1, 0, 0, 0)`        | Date of earliest event to show on the calendar |
 | `endDate`                  | `new Date(2999, 0, 1, 0, 0, 0)`        | Date of latest event to show on the calendar |
+| `allowPartialEvents`       | `false`                                | If a multi-day event falls across the start or end date, we either show a partial event (*true*) or the entire event (*false*) |
 | `moveSpeed`                | `500`                                  | Speed of month move when you click on a new date |
 | `moveOpacity`              | `0.15`                                 | Month and events fadeOut to this opacity |
 
