@@ -722,7 +722,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
             // Calculate the date to show
             if (show === 'current') {
-                dateToShow = Date.today().moveToFirstDayOfMonth();
+                dateToShow = $EventCalendar.settings.currentDate;
             } else {
                 dateToShow = new Date($element.attr('data-current-year'), $element.attr('data-current-month'), 1, 0, 0, 0);
                 dateToShow = (show === 'prev') ? dateToShow.addMonths(-1) : dateToShow.addMonths(1);
@@ -776,7 +776,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 }
 
                 // Add empty cells before the first day of the month
-                var emptyCellsToShow = dateToShow.getDay();
+                var emptyCellsToShow = Date.today().moveToFirstDayOfMonth().getDay();
                 if ($EventCalendar.settings.startWeekOnMonday) {
                     emptyCellsToShow -= 1;
                     if (emptyCellsToShow < 0) {
@@ -882,7 +882,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
             var year = parseInt($element.attr('data-current-year'), 10);
             var month = parseInt($element.attr('data-current-month'), 10);
-            var day = Date.today().getDate();
+            var day = $EventCalendar.settings.currentDate.getDate();
 
             if ($EventCalendar.settings.initialEventList && $EventCalendar.settings.initialEventList === 'day') {
                 _getEvents($EventCalendar.settings.eventsLimit, year, month, day, 'day');
@@ -992,7 +992,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         openEventInNewWindow     : false,
         eventsScrollable         : false,
         initialEventList         : false,       // false for upcoming, 'day' for today, or 'month' for this month.
-        currentDate              : new Date(),
+        currentDate              : Date.today(),
         startDate                : new Date(1900, 0, 1, 0, 0, 0),
         endDate                  : new Date(2999, 0, 1, 0, 0, 0),
         moveSpeed                : 500,         // speed of month move when you click on a new date
