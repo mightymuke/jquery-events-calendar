@@ -810,14 +810,16 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             if ((!eventItem) || (!highlighter)) { return; }
             var specificYear = (year !== undefined) ? year : -1;
             var specificMonth = (month !== undefined) ? month : -1;
+            var itemAdded = false;
 
             var eventInstance = eventItem.getFirstEventInstance();
             while (eventInstance && !EventItem.datePeriodIsInTheFuture(eventInstance, specificYear, specificMonth)) {
                 var eventDate = eventInstance.startDate;
                 if (EventItem.datePeriodIsCurrent($EventCalendar.settings.startDate, $EventCalendar.settings.endDate, eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate())) {
                     // Add one list item for this instance
-                    if (lister && (typeof lister === 'function')) {
+                    if (lister && (typeof lister === 'function') && (!itemAdded || !$EventCalendar.settings.groupEvents)) {
                         lister(eventInstance);
+                        itemAdded = true;
                     }
 
                     // Highlight each event day in the calendar
@@ -989,6 +991,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         showDescription          : false,
         collapsible              : false,
         onlyOneDescription       : true,
+        groupEvents              : false,
         openEventInNewWindow     : false,
         eventsScrollable         : false,
         initialEventList         : false,       // false for upcoming, 'day' for today, or 'month' for this month.
