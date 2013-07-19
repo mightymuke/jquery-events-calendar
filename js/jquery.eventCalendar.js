@@ -777,7 +777,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 }
 
                 // Add empty cells before the first day of the month
-                var emptyCellsToShow = Date.today().moveToFirstDayOfMonth().getDay();
+                var emptyCellsToShow = dateToShow.clone().moveToFirstDayOfMonth().getDay();
                 if ($EventCalendar.settings.startWeekOnMonday) {
                     emptyCellsToShow -= 1;
                     if (emptyCellsToShow < 0) {
