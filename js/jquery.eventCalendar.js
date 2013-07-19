@@ -613,8 +613,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                                 $element.find('.currentMonth .eventsCalendar-daysList #dayList_' + dayOfMonth).addClass('dayWithEvents');
                             },
                             function(eventInstance) {
-                                if (eventInstance.listingNumberOfDays < 1) { return; }
-                                if (limit !== 0 && itemsInList >= limit) { return; }
+                                if (eventInstance.listingNumberOfDays < 1) { return false; }
+                                if (limit !== 0 && itemsInList >= limit) { return false; }
 
                                 var listingStartDate = eventInstance.startDate.clone();
                                 listingStartDate = listingStartDate.addDays(eventInstance.listingStartOffset);
@@ -624,7 +624,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                                 var eventIsCurrent = EventItem.datePeriodIsCurrent(eventInstance.startDate, eventInstance.endDate, year, month, dayToCheck);
 
                                 // Check if the date is either in the event period or in the listing period
-                                if (!eventIsCurrent && !EventItem.datePeriodIsCurrent(listingStartDate, listingEndDate, year, month, dayToCheck)) { return; }
+                                if (!eventIsCurrent && !EventItem.datePeriodIsCurrent(listingStartDate, listingEndDate, year, month, dayToCheck)) { return false; }
 
                                 var eventClass = eventInstance.classEvent ? ' class="' + eventInstance.classEvent + '"' : '';
 
@@ -650,6 +650,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                                 events.push('<li id="' + key + '"' + eventClass + '>' + eventTitle + '<div' + descriptionClass + '>' + event.description + '</div></li>');
 
                                 itemsInList += 1;
+                                return true;
                             },
                             year,
                             month,
@@ -823,8 +824,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                     if (lister && (typeof lister === 'function') &&
                             (!itemAdded || !$EventCalendar.settings.groupEvents) &&
                             (!$EventCalendar.settings.allowPartialEvents || (specificDay < 1) || specificDate.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate))) {
-                        lister(eventInstance);
-                        itemAdded = true;
+                        itemAdded = itemAdded || lister(eventInstance);
                     }
 
                     // Highlight each event day in the calendar
