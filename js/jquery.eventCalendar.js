@@ -586,6 +586,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 height: eventContentHeight
             }, $EventCalendar.settings.moveSpeed, function() {
                 $element.find('.eventsCalendar-list').css({'left': 0, 'height': 'auto'}).hide();
+                $element.find('.dayWithEvents').removeClass('dayWithEvents');
 
                 var events = [];
 
