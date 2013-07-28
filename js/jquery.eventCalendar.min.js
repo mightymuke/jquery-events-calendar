@@ -1,6 +1,6 @@
 /**
  * @preserve: jquery.eventCalendar.js
- * @version:  0.60
+ * @version:  1.01
  * @author:   Jaime Fernandez (@vissit)
  * @company:  Paradigma Tecnologico (@paradigmate)
  * @date:     2013-06-29
