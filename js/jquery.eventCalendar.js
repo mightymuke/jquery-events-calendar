@@ -293,6 +293,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
          * @private
          */
         var _getEvent = function(year, month) {
+            var eventEndDate;
             if (_index < 0) { _index = 0; }
             if ((_index > 0) && ((!$EventItem.recurrence) || ($EventItem.recurrence.type === 'none'))) {
                 return null;
@@ -304,7 +305,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             var eventStartDate = $EventItem.recurrence.getRecurrenceDate($EventItem.startDate, _index);
             if (eventStartDate) {
                 var dateDifference = _dateDiffInDays($EventItem.startDate, eventStartDate);
-                var eventEndDate = (new Date($EventItem.endDate)).addDays(dateDifference);
+                eventEndDate = (new Date($EventItem.endDate)).addDays(dateDifference);
 
                 // Check event dates are within required period
                 if (eventStartDate && (specificYear >= 0 || specificMonth >= 0)) {
@@ -613,27 +614,17 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                         $EventCalendar.addEventToCalendar(
                             eventItem,
                             function(eventInstance, dayOfMonth) {
-                                $element.find('.currentMonth .eventsCalendar-daysList #dayList_' + dayOfMonth).addClass('dayWithEvents');
+                                var dayElement = $element.find('.currentMonth .eventsCalendar-daysList #dayList_' + dayOfMonth);
+                                if (!dayElement.hasClass('dayWithEvents')) { dayElement.addClass('dayWithEvents'); }
                             },
-                            function(eventInstance) {
-                                if (eventInstance.listingNumberOfDays < 1) { return false; }
+                            function(eventInstance, activeClass) {
                                 if (limit !== 0 && itemsInList >= limit) { return false; }
-
-                                var listingStartDate = eventInstance.startDate.clone();
-                                listingStartDate = listingStartDate.addDays(eventInstance.listingStartOffset);
-                                var listingEndDate = listingStartDate.clone();
-                                listingEndDate = listingEndDate.addDays(eventInstance.listingNumberOfDays - 1);
-
-                                var eventIsCurrent = EventItem.datePeriodIsCurrent(eventInstance.startDate, eventInstance.endDate, year, month, dayToCheck);
-
-                                // Check if the date is either in the event period or in the listing period
-                                if (!eventIsCurrent && !EventItem.datePeriodIsCurrent(listingStartDate, listingEndDate, year, month, dayToCheck)) { return false; }
 
                                 var eventClass = eventInstance.classEvent ? ' class="' + eventInstance.classEvent + '"' : '';
 
                                 var titleClass = ' class="eventTitle';
                                 titleClass += eventInstance.classTitle ? ' ' + eventInstance.classTitle : '';
-                                titleClass += eventIsCurrent ? ' current' : '';
+                                titleClass += activeClass ? ' ' + activeClass : '';
                                 titleClass += '"';
 
                                 var descriptionClass = ' class="eventDescription';
@@ -818,14 +809,19 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             var specificMonth = (month !== undefined) ? month : -1;
             var specificDay = (day !== undefined) ? day : -1;
             var specificDate = (specificYear < 0 || specificMonth < 0 || specificDay < 0) ? $EventCalendar.settings.startDate : new Date(specificYear, specificMonth, specificDay, 0, 0, 0);
-            var itemAdded = false;
+            var listingStartDate;
+            var listingEndDate;
             var dateToBeChecked;
+            var eventIsCurrent = false;
+            var itemAdded = false;
 
             function _needToAddEventToList() {
                 // If there's no function to call, then lets not bother doing anything
                 if (!lister || (typeof lister !== 'function')) { return false; }
                 // If we can only have this event listed once, and its already there, we're done
                 if (itemAdded && $EventCalendar.settings.groupEvents) { return false; }
+                // Check if the date is either in the event period or in the listing period
+                if (!eventIsCurrent && !EventItem.datePeriodIsCurrent(listingStartDate, listingEndDate, specificYear, specificMonth, specificDay)) { return false; }
                 // Need to add event if all event days are being highlighted, or if the day we're checking falls withing the allowed period
                 return (!$EventCalendar.settings.allowPartialEvents || (specificDay < 1) || specificDate.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate));
             }
@@ -842,22 +838,45 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             }
 
             var eventInstance = eventItem.getFirstEventInstance();
+            if (eventInstance.listingNumberOfDays < 1) { return false; }
             while (eventInstance && !EventItem.datePeriodIsInTheFuture(eventInstance, specificYear, specificMonth)) {
                 // Does any part of this event fall within the allowed time period?
                 if (eventInstance.startDate.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate) || eventInstance.endDate.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate)) {
+
+                    listingStartDate = eventInstance.startDate.clone();
+                    listingStartDate = listingStartDate.addDays(eventInstance.listingStartOffset);
+                    listingEndDate = listingStartDate.clone();
+                    listingEndDate = listingEndDate.addDays(eventInstance.listingNumberOfDays - 1);
+
+                    eventIsCurrent = EventItem.datePeriodIsCurrent(eventInstance.startDate, eventInstance.endDate, specificYear, specificMonth, specificDay);
+
                     // Add one list item for this instance
                     if (_needToAddEventToList()) {
-                        itemAdded = itemAdded || lister(eventInstance);
+                        itemAdded = itemAdded || lister(eventInstance, eventIsCurrent ? ' current' : '');
                     }
 
                     // Highlight each event day in the calendar
                     if (highlighter && (typeof highlighter === 'function')) {
-                        dateToBeChecked = new Date(eventInstance.startDate);
-                        while (dateToBeChecked.compareTo(eventInstance.endDate) <= 0) {
-                            if (_needToHighlightDayInCalendar()) {
-                                highlighter(eventInstance, dateToBeChecked.getDate());
+                        // Highlight event days
+                        if ($EventCalendar.settings.highlightEventDays) {
+                            dateToBeChecked = new Date(eventInstance.startDate);
+                            while (dateToBeChecked.compareTo(eventInstance.endDate) <= 0) {
+                                if (_needToHighlightDayInCalendar()) {
+                                    highlighter(eventInstance, dateToBeChecked.getDate());
+                                }
+                                dateToBeChecked.addDays(1);
                             }
-                            dateToBeChecked.addDays(1);
+                        }
+
+                        // Highlight listing days
+                        if ($EventCalendar.settings.highlightListingDays) {
+                            dateToBeChecked = listingStartDate.clone();
+                            while (dateToBeChecked.compareTo(listingEndDate) <= 0) {
+                                if (_needToHighlightDayInCalendar()) {
+                                    highlighter(eventInstance, dateToBeChecked.getDate());
+                                }
+                                dateToBeChecked.addDays(1);
+                            }
                         }
                     }
                 }
@@ -1012,6 +1031,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         textPrevious             : "prev",
         textNextEvents           : "Next events:",
         textGoToEventUrl         : "See the event",
+        highlightEventDays       : true,
+        highlightListingDays     : false,
         showDayAsWeeks           : true,
         startWeekOnMonday        : true,
         showDayNameInCalendar    : true,

@@ -36,6 +36,8 @@ Thanks to [jaime8111](https://github.com/jaime8111) for an awesome plugin.
 | `textPrevious`             | `"prev"`                               | |
 | `textNextEvents`           | `"Next events:"`                       | |
 | `textGoToEventUrl`         | `"See the event"`                      | |
+| `highlightEventDays`       | `true`                                 | Highlights days in calendar that have events running |
+| `highlightListingDays`     | `false`                                | Highlights days in calendar that have events listed |
 | `showDayAsWeeks`           | `true`                                 | |
 | `startWeekOnMonday`        | `true`                                 | Determines if the calendar week starts on Sunday or Monday |
 | `showDayNameInCalendar`    | `true`                                 | |
