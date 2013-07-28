@@ -1,9 +1,9 @@
 /**
  * @preserve: jquery.eventCalendar.js
- * @version:  1.01
  * @author:   Jaime Fernandez (@vissit)
  * @company:  Paradigma Tecnologico (@paradigmate)
- * @date:     2013-06-29
+ * @version:  1.01
+ * @date:     2013-07-28
  * @website:  http://www.vissit.com/projects/eventCalendar/
  */
 
@@ -18,12 +18,14 @@
                             :     type     - the type of repetition: 'day', 'week', 'month', 'year'
                             :     interval - the interval between events in the "type" units
                             :     end      - when the recurrence should end - either 'none' (default), number of times, or a date
-                            : coming...
-                            :     day and count2 - define a day of a month (first Monday, third Friday, etc)
-                            :     frequency - an array of week days (Sunday is 0)
                             : - Examples of the rec_type data:
                             :     { type: 'day', interval: 3 } - every three days
                             :     { type: 'month', interval: 2 } - every two months
+                            :     { type: 'month', interval: 2, end: 6 } - every two months ending after 6 intervals
+                            :     { type: 'month', interval: 2, end: '20131201' } - every two months ending 01 Dec 2013
+                            : coming...
+                            :     day and count2 - define a day of a month (first Monday, third Friday, etc)
+                            :     frequency - an array of week days (Sunday is 0)
                             :     { type: 'month', interval: 1, ???? _1_2_ - second Monday of each month
                             :     { type: 'week', interval: 2, frequency: [1,5] } - Monday and Friday of each second week
         classEvent          : event class - used for styling the event (no default)
@@ -817,24 +819,42 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             var specificDay = (day !== undefined) ? day : -1;
             var specificDate = (specificYear < 0 || specificMonth < 0 || specificDay < 0) ? $EventCalendar.settings.startDate : new Date(specificYear, specificMonth, specificDay, 0, 0, 0);
             var itemAdded = false;
+            var dateToBeChecked;
+
+            function _needToAddEventToList() {
+                // If there's no function to call, then lets not bother doing anything
+                if (!lister || (typeof lister !== 'function')) { return false; }
+                // If we can only have this event listed once, and its already there, we're done
+                if (itemAdded && $EventCalendar.settings.groupEvents) { return false; }
+                // Need to add event if all event days are being highlighted, or if the day we're checking falls withing the allowed period
+                return (!$EventCalendar.settings.allowPartialEvents || (specificDay < 1) || specificDate.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate));
+            }
+
+            function _needToHighlightDayInCalendar() {
+                // If there's no function to call, then lets not bother doing anything
+                if (!highlighter || (typeof highlighter !== 'function')) { return false; }
+                // If its for a different year then we're not interested
+                if ((specificYear !== -1) && (dateToBeChecked.getFullYear() !== specificYear)) { return false; }
+                // If its for a different month then we're not interested
+                if ((specificMonth !== -1) && (dateToBeChecked.getMonth() !== specificMonth)) { return false; }
+                // Need to highlight day if highlighting entire item, or if highlighting partial days and this day falls withing the allowed period
+                return (!$EventCalendar.settings.allowPartialEvents || dateToBeChecked.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate));
+            }
 
             var eventInstance = eventItem.getFirstEventInstance();
             while (eventInstance && !EventItem.datePeriodIsInTheFuture(eventInstance, specificYear, specificMonth)) {
+                // Does any part of this event fall within the allowed time period?
                 if (eventInstance.startDate.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate) || eventInstance.endDate.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate)) {
                     // Add one list item for this instance
-                    if (lister && (typeof lister === 'function') &&
-                            (!itemAdded || !$EventCalendar.settings.groupEvents) &&
-                            (!$EventCalendar.settings.allowPartialEvents || (specificDay < 1) || specificDate.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate))) {
+                    if (_needToAddEventToList()) {
                         itemAdded = itemAdded || lister(eventInstance);
                     }
 
                     // Highlight each event day in the calendar
                     if (highlighter && (typeof highlighter === 'function')) {
-                        var dateToBeChecked = new Date(eventInstance.startDate);
+                        dateToBeChecked = new Date(eventInstance.startDate);
                         while (dateToBeChecked.compareTo(eventInstance.endDate) <= 0) {
-                            if (((specificYear === -1) || (dateToBeChecked.getFullYear() === specificYear)) &&
-                                    ((specificMonth === -1) || (dateToBeChecked.getMonth() === specificMonth)) &&
-                                    (!$EventCalendar.settings.allowPartialEvents || dateToBeChecked.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate))) {
+                            if (_needToHighlightDayInCalendar()) {
                                 highlighter(eventInstance, dateToBeChecked.getDate());
                             }
                             dateToBeChecked.addDays(1);
