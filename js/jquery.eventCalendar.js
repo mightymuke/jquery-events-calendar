@@ -805,8 +805,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
          */
         $EventCalendar.addEventToCalendar = function(eventItem, highlighter, lister, year, month, day) {
             if ((!eventItem) || (!highlighter)) { return; }
-            var specificYear = (year !== undefined) ? year : -1;
-            var specificMonth = (month !== undefined) ? month : -1;
+            var specificYear = (year !== undefined) && year ? year : -1;
+            var specificMonth = (month !== undefined) && month ? month : -1;
             var specificDay = (day !== undefined) ? day : -1;
             var specificDate = (specificYear < 0 || specificMonth < 0 || specificDay < 0) ? $EventCalendar.settings.startDate : new Date(specificYear, specificMonth, specificDay, 0, 0, 0);
             var listingStartDate;
@@ -1024,7 +1024,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         eventsLimit              : 4,
         dayNameFormat            : "ddd",
         textCalendarTitle        : "MMMM yyyy",
-        textEventHeaderDayView   : "MMMM ddS even\\t\\s:",
+        textEventHeaderDayView   : "MMMM dS even\\t\\s:",
         textEventHeaderMonthView : "MMMM even\\t\\s:",
         textNoEvents             : "There are no events in this period",
         textNext                 : "next",
