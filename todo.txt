@@ -1,7 +1,0 @@
-TODOS:
-- if month start on saturday or sundat, there is one more week, and the calendar hide the "Next events" text.
-- Events of several days
-
-- Timeago Plugin integration
-- option to work without a json. just html
-- Add events to the jQuery Event Calendar
