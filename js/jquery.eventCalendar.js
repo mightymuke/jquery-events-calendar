@@ -632,7 +632,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                                 descriptionClass += (!$EventCalendar.settings.showDescription) ? ' hidden' : '';
                                 descriptionClass += '"';
 
-                                var eventLinkTarget = $EventCalendar.settings.openEventInNewWindow ? '_target' : "_self";
+                                var eventLinkTarget = $EventCalendar.settings.openEventInNewWindow ? '_blank' : "_self";
 
                                 var eventTitle;
                                 if (eventInstance.url) {
