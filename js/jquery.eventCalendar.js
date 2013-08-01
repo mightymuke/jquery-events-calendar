@@ -562,6 +562,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         var getEventsData = function(data, limit, year, month, day, direction) {
             var directionLeftMove = "-=" + $EventCalendar.directionLeftMove;
             var eventContentHeight = "auto";
+            var yearToCheck = (year !== '') ? parseInt(year, 10) : -1;
+            var monthToCheck = (month !== '') ? parseInt(month, 10) : -1;
             var dayToCheck = (day !== '') ? parseInt(day, 10) : -1;
 
             var subtitle = $element.find('.eventsCalendar-list-wrap .eventsCalendar-subtitle');
@@ -571,8 +573,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 eventContentHeight = "auto";
                 directionLeftMove = "-=0";
             } else {
-                var displayDate = new Date(year, month, (day !== '') ? day : 1, 0, 0, 0);
-                var headerText = (day !== '') ? displayDate.toString($EventCalendar.settings.textEventHeaderDayView) : displayDate.toString($EventCalendar.settings.textEventHeaderMonthView);
+                var displayDate = new Date(yearToCheck, monthToCheck, (dayToCheck >= 0) ? dayToCheck : 1, 0, 0, 0);
+                var headerText = (dayToCheck > -1) ? displayDate.toString($EventCalendar.settings.textEventHeaderDayView) : displayDate.toString($EventCalendar.settings.textEventHeaderMonthView);
                 subtitle.html(headerText);
 
                 if (direction === 'prev') {
@@ -646,8 +648,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                                 itemsInList += 1;
                                 return true;
                             },
-                            year,
-                            month,
+                            yearToCheck,
+                            monthToCheck,
                             dayToCheck
                         );
                     });
@@ -675,9 +677,9 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
         var _getEvents = function(limit, year, month, day, direction) {
             var maxLimit = limit || 0;
-            var specificYear = year || '';
-            var specificMonth = (month !== undefined) ? month : '';
-            var specificDay = day || '';
+            var specificYear = (typeof year === "number") ? year : $EventCalendar.settings.currentDate.getFullYear();
+            var specificMonth = (typeof month === "number") ? month : $EventCalendar.settings.currentDate.getMonth();
+            var specificDay = (typeof day === "number") ? day : -1;
 
             $element.find('.eventsCalendar-loading').fadeIn();
 
@@ -805,9 +807,9 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
          */
         $EventCalendar.addEventToCalendar = function(eventItem, highlighter, lister, year, month, day) {
             if ((!eventItem) || (!highlighter)) { return; }
-            var specificYear = (year !== undefined) && year ? year : -1;
-            var specificMonth = (month !== undefined) && month ? month : -1;
-            var specificDay = (day !== undefined) ? day : -1;
+            var specificYear = (typeof year === "number") ? year : $EventCalendar.settings.currentDate.getFullYear();
+            var specificMonth = (typeof month === "number") ? month : $EventCalendar.settings.currentDate.getMonth();
+            var specificDay = (typeof day === "number") ? day : -1;
             var specificDate = (specificYear < 0 || specificMonth < 0 || specificDay < 0) ? $EventCalendar.settings.startDate : new Date(specificYear, specificMonth, specificDay, 0, 0, 0);
             var listingStartDate;
             var listingEndDate;
@@ -946,14 +948,14 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 e.preventDefault();
                 var year = parseInt($element.attr('data-current-year'), 10);
                 var month = parseInt($element.attr('data-current-month'), 10);
-                var day = $(this).parent().attr('rel');
+                var day = parseInt($(this).parent().attr('rel'), 10);
                 _getEvents(false, year, month, day, "day");
             });
 
             $element.on('click', '.monthTitle', function (e) {
                 e.preventDefault();
-                var year = $element.attr('data-current-year');
-                var month = $element.attr('data-current-month');
+                var year = parseInt($element.attr('data-current-year'), 10);
+                var month = parseInt($element.attr('data-current-month'), 10);
 
                 _getEvents($EventCalendar.settings.eventsLimit, year, month, false, "month");
             });
