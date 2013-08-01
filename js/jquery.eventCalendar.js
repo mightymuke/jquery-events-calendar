@@ -2,7 +2,7 @@
  * @preserve: jquery.eventCalendar.js
  * @author:   Jaime Fernandez (@vissit)
  * @company:  Paradigma Tecnologico (@paradigmate)
- * @version:  1.02
+ * @version:  1.03
  * @date:     2013-08-01
  * @website:  http://www.vissit.com/projects/eventCalendar/
  */
@@ -530,7 +530,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
     function EventCalendar(element, options) {
         var $EventCalendar = this;
         var $element = $(element);
-        var directionLeftMove = "300";
+        var slideDistance = "300";
         var eventsJson = {};
 
         var showError = function(msg) {
@@ -538,7 +538,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 .html("<span class='eventsCalendar-loading error'>" +
                     msg +
                     " " +
-                    $EventCalendar.settings.eventsjson +
+                    $EventCalendar.settings.eventsJson +
                     "</span>");
         };
 
@@ -547,7 +547,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
          * @private
          */
         var _setCalendarWidth = function() {
-            directionLeftMove = $element.width();
+            slideDistance = $element.width();
             $element.find('.eventsCalendar-monthWrap').width($element.width() + 'px');
             $element.find('.eventsCalendar-list-wrap').width($element.width() + 'px');
         };
@@ -560,7 +560,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         };
 
         var getEventsData = function(data, limit, year, month, day, direction) {
-            var directionLeftMove = "-=" + $EventCalendar.directionLeftMove;
+            var directionLeftMove = "-=" + slideDistance;
             var eventContentHeight = "auto";
             var yearToCheck = (year !== '') ? parseInt(year, 10) : -1;
             var monthToCheck = (month !== '') ? parseInt(month, 10) : -1;
@@ -578,100 +578,103 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 subtitle.html(headerText);
 
                 if (direction === 'prev') {
-                    directionLeftMove = "+=" + $EventCalendar.directionLeftMove;
+                    directionLeftMove = "+=" + slideDistance;
                 } else if (direction === 'day' || direction === 'month') {
                     directionLeftMove = "+=0";
                     eventContentHeight = 0;
                 }
             }
 
-            $element.find('.eventsCalendar-list').animate({
-                opacity: $EventCalendar.settings.moveOpacity,
-                left: directionLeftMove,
-                height: eventContentHeight
-            }, $EventCalendar.settings.moveSpeed, function() {
-                $element.find('.eventsCalendar-list').css({'left': 0, 'height': 'auto'}).hide();
-                $element.find('.dayWithEvents').removeClass('dayWithEvents');
+            $element.find('.eventsCalendar-list')
+                .finish()
+                .animate({
+                    opacity : $EventCalendar.settings.moveOpacity,
+                    left    : directionLeftMove,
+                    height  : eventContentHeight
+                }, $EventCalendar.settings.moveSpeed, function() {
+                    $element.find('.eventsCalendar-list').css({'left': 0, 'height': 'auto'}).hide();
+                    $element.find('.dayWithEvents').removeClass('dayWithEvents');
 
-                var events = [];
+                    var events = [];
 
-                data = $(data).sort(function(aDate, bDate) {
-                    var compare;
-                    if ($EventCalendar.settings.sortAscending) {
-                        compare = aDate.startDate.toLowerCase() > bDate.startDate.toLowerCase() ? 1 : -1;
-                    } else {
-                        compare = aDate.startDate.toLowerCase() < bDate.startDate.toLowerCase() ? 1 : -1;
-                    }
-                    return compare;
-                }); // sort event by dates
-
-                // Add each event to the calendar
-                if (data.length) {
-
-                    var itemsInList = 0;
-                    $.each(data, function(key, event) {
-                        var eventItem = new EventItem(event, $EventCalendar.settings.jsonDateFormat);
-
-                        // Add to calendar
-                        $EventCalendar.addEventToCalendar(
-                            eventItem,
-                            function(eventInstance, dayOfMonth) {
-                                var dayElement = $element.find('.currentMonth .eventsCalendar-daysList #dayList_' + dayOfMonth);
-                                if (!dayElement.hasClass('dayWithEvents')) { dayElement.addClass('dayWithEvents'); }
-                            },
-                            function(eventInstance, activeClass) {
-                                if (limit !== 0 && itemsInList >= limit) { return false; }
-
-                                var eventClass = eventInstance.classEvent ? ' class="' + eventInstance.classEvent + '"' : '';
-
-                                var titleClass = ' class="eventTitle';
-                                titleClass += eventInstance.classTitle ? ' ' + eventInstance.classTitle : '';
-                                titleClass += activeClass ? ' ' + activeClass : '';
-                                titleClass += '"';
-
-                                var descriptionClass = ' class="eventDescription';
-                                descriptionClass += eventInstance.classDescription ? ' ' + eventInstance.classDescription : '';
-                                descriptionClass += (!$EventCalendar.settings.showDescription) ? ' hidden' : '';
-                                descriptionClass += '"';
-
-                                var eventLinkTarget = $EventCalendar.settings.openEventInNewWindow ? '_blank' : "_self";
-
-                                var eventTitle;
-                                if (eventInstance.url) {
-                                    eventTitle = '<a href="' + eventInstance.url + '" target="' + eventLinkTarget + '"' + titleClass + '>' + eventInstance.title + '</a>';
-                                } else {
-                                    eventTitle = '<span' + titleClass + '>' + eventInstance.title + '</span>';
-                                }
-
-                                events.push('<li id="' + key + '"' + eventClass + '>' + eventTitle + '<div' + descriptionClass + '>' + event.description + '</div></li>');
-
-                                itemsInList += 1;
-                                return true;
-                            },
-                            yearToCheck,
-                            monthToCheck,
-                            dayToCheck
-                        );
+                    // sort event by dates
+                    data = $(data).sort(function(aDate, bDate) {
+                        var compare;
+                        if ($EventCalendar.settings.sortAscending) {
+                            compare = aDate.startDate.toLowerCase() > bDate.startDate.toLowerCase() ? 1 : -1;
+                        } else {
+                            compare = aDate.startDate.toLowerCase() < bDate.startDate.toLowerCase() ? 1 : -1;
+                        }
+                        return compare;
                     });
-                }
 
-                // Add message if there are no events for this period
-                if (!events.length) {
-                    events.push('<li class="eventsCalendar-noEvents"><p>' + $EventCalendar.settings.textNoEvents + '</p></li>');
-                }
+                    // Add each event to the calendar
+                    if (data.length) {
 
-                $element.find('.eventsCalendar-loading').hide();
-                $element.find('.eventsCalendar-list').html(events.join(''));
+                        var itemsInList = 0;
+                        $.each(data, function(key, event) {
+                            var eventItem = new EventItem(event, $EventCalendar.settings.jsonDateFormat);
 
-                if ($EventCalendar.settings.collapsible) {
-                    $element.find('.eventDescription').hide();
-                }
+                            // Add to calendar
+                            $EventCalendar.addEventToCalendar(
+                                eventItem,
+                                function(eventInstance, dayOfMonth) {
+                                    var dayElement = $element.find('.currentMonth .eventsCalendar-daysList #dayList_' + dayOfMonth);
+                                    if (!dayElement.hasClass('dayWithEvents')) { dayElement.addClass('dayWithEvents'); }
+                                },
+                                function(eventInstance, activeClass) {
+                                    if (limit !== 0 && itemsInList >= limit) { return false; }
 
-                $element.find('.eventsCalendar-list').animate({
-                    opacity: 1,
-                    height: "toggle"
-                }, $EventCalendar.settings.moveSpeed);
-            });
+                                    var eventClass = eventInstance.classEvent ? ' class="' + eventInstance.classEvent + '"' : '';
+
+                                    var titleClass = ' class="eventTitle';
+                                    titleClass += eventInstance.classTitle ? ' ' + eventInstance.classTitle : '';
+                                    titleClass += activeClass ? ' ' + activeClass : '';
+                                    titleClass += '"';
+
+                                    var descriptionClass = ' class="eventDescription';
+                                    descriptionClass += eventInstance.classDescription ? ' ' + eventInstance.classDescription : '';
+                                    descriptionClass += (!$EventCalendar.settings.showDescription) ? ' hidden' : '';
+                                    descriptionClass += '"';
+
+                                    var eventLinkTarget = $EventCalendar.settings.openEventInNewWindow ? '_blank' : "_self";
+
+                                    var eventTitle;
+                                    if (eventInstance.url) {
+                                        eventTitle = '<a href="' + eventInstance.url + '" target="' + eventLinkTarget + '"' + titleClass + '>' + eventInstance.title + '</a>';
+                                    } else {
+                                        eventTitle = '<span' + titleClass + '>' + eventInstance.title + '</span>';
+                                    }
+
+                                    events.push('<li id="' + key + '"' + eventClass + '>' + eventTitle + '<div' + descriptionClass + '>' + event.description + '</div></li>');
+
+                                    itemsInList += 1;
+                                    return true;
+                                },
+                                yearToCheck,
+                                monthToCheck,
+                                dayToCheck
+                            );
+                        });
+                    }
+
+                    // Add message if there are no events for this period
+                    if (!events.length) {
+                        events.push('<li class="eventsCalendar-noEvents"><p>' + $EventCalendar.settings.textNoEvents + '</p></li>');
+                    }
+
+                    $element.find('.eventsCalendar-loading').finish().hide();
+                    $element.find('.eventsCalendar-list').html(events.join(''));
+
+                    if ($EventCalendar.settings.collapsible) {
+                        $element.find('.eventDescription').hide();
+                    }
+
+                    $element.find('.eventsCalendar-list').animate({
+                        opacity: 1,
+                        height: "toggle"
+                    }, $EventCalendar.settings.moveSpeed);
+                });
             _setCalendarWidth();
         };
 
@@ -906,10 +909,10 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 var lastMonthMove;
                 if ($(this).hasClass('next')) {
                     _changeCalendarMonth("next");
-                    lastMonthMove = '-=' + directionLeftMove;
+                    lastMonthMove = '-=' + slideDistance;
                 } else {
                     _changeCalendarMonth("prev");
-                    lastMonthMove = '+=' + directionLeftMove;
+                    lastMonthMove = '+=' + slideDistance;
                 }
 
                 $element.find('.eventsCalendar-monthWrap.oldMonth').animate({
