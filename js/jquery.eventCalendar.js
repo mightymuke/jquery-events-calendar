@@ -2,8 +2,8 @@
  * @preserve: jquery.eventCalendar.js
  * @author:   Jaime Fernandez (@vissit)
  * @company:  Paradigma Tecnologico (@paradigmate)
- * @version:  1.01
- * @date:     2013-07-28
+ * @version:  1.02
+ * @date:     2013-08-01
  * @website:  http://www.vissit.com/projects/eventCalendar/
  */
 
