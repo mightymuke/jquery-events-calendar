@@ -773,5 +773,6 @@ img, object { max-width: 100%; } /* http://unstoppablerobotninja.com/entry/fluid
 	.ac		{ text-align:center; }
 
 
+.row { max-width: 1280px; }
 
 
