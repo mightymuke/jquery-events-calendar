@@ -9,6 +9,7 @@
 
 /*
     JSON data format:
+        id                  : Event ID (allows for manipulation via callbacks
         startDate           : event start date - either in timestamp format or 'YYYY-MM-DD HH:MM:SS'
         endDate             : event end date - used if event spans a number of days (defaults to startDate)
         listingStartOffset  : number of days offset to start the event listing from (-'ve is previous, 0 is event date, +'ve is future) (defaults to 0)
@@ -232,6 +233,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
     function EventInstance() {
         var $EventInstance = this;
 
+        $EventInstance.id = null;
         $EventInstance.startDate = null;
         $EventInstance.endDate = null;
         $EventInstance.listingStartOffset = 0;
@@ -257,6 +259,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         var _error = false;
 
         $EventItem.recurrence = null;
+        $EventItem.id = null;
         $EventItem.startDate = null;
         $EventItem.endDate = null;
         $EventItem.listingStartOffset = 0;
@@ -322,6 +325,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             var ei = null;
             if (eventStartDate) {
                 ei = new EventInstance();
+                ei.id = $EventItem.id;
                 ei.startDate = eventStartDate;
                 ei.endDate = eventEndDate;
                 ei.listingStartOffset = $EventItem.listingStartOffset;
@@ -343,6 +347,7 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
          */
         var _setEventToNone = function() {
             $EventItem.recurrence = null;
+            $EventItem.id = null;
             $EventItem.startDate = null;
             $EventItem.endDate = null;
             $EventItem.listingStartOffset = 0;
@@ -403,6 +408,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             }
 
             $EventItem.recurrence = new EventRecurrence(event.recurrence, dateFormat);
+
+            $EventItem.id = event.id;
 
             $EventItem.startDate = event.startDate ? _newDate(event.startDate, dateFormat) : null;
             // Cater for obsolete date property
