@@ -2,8 +2,8 @@
  * @preserve: jquery.eventCalendar.js
  * @author:   Jaime Fernandez (@vissit)
  * @company:  Paradigma Tecnologico (@paradigmate)
- * @version:  1.03
- * @date:     2013-08-01
+ * @version:  1.04
+ * @date:     2013-08-04
  * @website:  http://www.vissit.com/projects/eventCalendar/
  */
 
@@ -615,6 +615,9 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                         return compare;
                     });
 
+                    var onInitialiseList = $EventCalendar.settings.onInitialiseList;
+                    if (onInitialiseList && (typeof onInitialiseList === 'function')) { onInitialiseList(); }
+
                     // Add each event to the calendar
                     if (data.length) {
 
@@ -654,6 +657,9 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                                     }
 
                                     events.push('<li id="' + key + '"' + eventClass + '>' + eventTitle + '<div' + descriptionClass + '>' + event.description + '</div></li>');
+
+                                    var onAddedToList = $EventCalendar.settings.onAddedToList;
+                                    if (onAddedToList && (typeof onAddedToList === 'function')) { onAddedToList(eventInstance); }
 
                                     itemsInList += 1;
                                     return true;
@@ -1028,11 +1034,13 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
      */
     $.fn.eventCalendar.defaults = {
         eventsJson               : "js/events.json",
-        jsonDateFormat           : "timestamp", // either timestamp or a format as specified here: https://code.google.com/p/datejs/wiki/FormatSpecifiers
         jsonData                 : "",          // to load and inline json (not ajax calls)
+        jsonDateFormat           : "timestamp", // either timestamp or a format as specified here: https://code.google.com/p/datejs/wiki/FormatSpecifiers
         cacheJson                : true,        // if true plugin get a json only first time and after plugin filter events
                                                 // if false plugin get a new json on each date change
         sortAscending            : true,        // false to sort descending
+        onInitialiseList         : false,       // Called when the event list is initialised
+        onAddedToList            : false,       // Called whenever an event is added to the list
         eventsLimit              : 4,
         dayNameFormat            : "ddd",
         textCalendarTitle        : "MMMM yyyy",
