@@ -855,12 +855,22 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                 return (!$EventCalendar.settings.allowPartialEvents || dateToBeChecked.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate));
             }
 
+            function _eventExistsInAllowedPeriod(startDate, endDate) {
+                var allowedStartDate = $EventCalendar.settings.startDate;
+                var allowedEndDate = $EventCalendar.settings.endDate;
+                return (startDate.between(allowedStartDate, allowedEndDate) || endDate.between(allowedStartDate, allowedEndDate));
+            }
+
             var eventInstance = eventItem.getFirstEventInstance();
             if (eventInstance.listingNumberOfDays < 1) { return false; }
-            while (eventInstance && !EventItem.datePeriodIsInTheFuture(eventInstance, specificYear, specificMonth)) {
-                // Does any part of this event fall within the allowed time period?
-                if (eventInstance.startDate.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate) || eventInstance.endDate.between($EventCalendar.settings.startDate, $EventCalendar.settings.endDate)) {
+            while (eventInstance) {
+                var eventExistsInAllowedPeriod = _eventExistsInAllowedPeriod(eventInstance.startDate, eventInstance.endDate);
 
+                // Stop processing if event starts after this calendar period
+                if (EventItem.datePeriodIsInTheFuture(eventInstance, specificYear, specificMonth)) { break; }
+
+                // Add event to calendar
+                if (eventExistsInAllowedPeriod) {
                     listingStartDate = eventInstance.startDate.clone();
                     listingStartDate = listingStartDate.addDays(eventInstance.listingStartOffset);
                     listingEndDate = listingStartDate.clone();
