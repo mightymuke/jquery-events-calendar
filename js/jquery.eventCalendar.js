@@ -2,8 +2,8 @@
  * @preserve: jquery.eventCalendar.js
  * @author:   Jaime Fernandez (@vissit)
  * @company:  Paradigma Tecnologico (@paradigmate)
- * @version:  1.04
- * @date:     2013-08-04
+ * @version:  1.05
+ * @date:     2013-08-06
  * @website:  http://www.vissit.com/projects/eventCalendar/
  */
 
@@ -615,8 +615,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                         return compare;
                     });
 
-                    var onInitialiseList = $EventCalendar.settings.onInitialiseList;
-                    if (onInitialiseList && (typeof onInitialiseList === 'function')) { onInitialiseList(); }
+                    var onBeforeInitialiseList = $EventCalendar.settings.onBeforeInitialiseList;
+                    if (onBeforeInitialiseList && (typeof onBeforeInitialiseList === 'function')) { onBeforeInitialiseList(); }
 
                     // Add each event to the calendar
                     if (data.length) {
@@ -658,8 +658,8 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
 
                                     events.push('<li id="' + key + '"' + eventClass + '>' + eventTitle + '<div' + descriptionClass + '>' + event.description + '</div></li>');
 
-                                    var onAddedToList = $EventCalendar.settings.onAddedToList;
-                                    if (onAddedToList && (typeof onAddedToList === 'function')) { onAddedToList(eventInstance); }
+                                    var onEventAddedToList = $EventCalendar.settings.onEventAddedToList;
+                                    if (onEventAddedToList && (typeof onEventAddedToList === 'function')) { onEventAddedToList(eventInstance); }
 
                                     itemsInList += 1;
                                     return true;
@@ -675,6 +675,9 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
                     if (!events.length) {
                         events.push('<li class="eventsCalendar-noEvents"><p>' + $EventCalendar.settings.textNoEvents + '</p></li>');
                     }
+
+                    var onAfterInitialiseList = $EventCalendar.settings.onAfterInitialiseList;
+                    if (onAfterInitialiseList && (typeof onAfterInitialiseList === 'function')) { onAfterInitialiseList(); }
 
                     $element.find('.eventsCalendar-loading').finish().hide();
                     $element.find('.eventsCalendar-list').html(events.join(''));
@@ -866,6 +869,12 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
             while (eventInstance) {
                 var eventExistsInAllowedPeriod = _eventExistsInAllowedPeriod(eventInstance.startDate, eventInstance.endDate);
 
+                // Run callback if event is allowed
+                if (eventExistsInAllowedPeriod) {
+                    var onBeforeAddingEvent = $EventCalendar.settings.onBeforeAddingEvent;
+                    if (onBeforeAddingEvent && (typeof onBeforeAddingEvent === 'function')) { onBeforeAddingEvent(eventInstance); }
+                }
+
                 // Stop processing if event starts after this calendar period
                 if (EventItem.datePeriodIsInTheFuture(eventInstance, specificYear, specificMonth)) { break; }
 
@@ -1049,8 +1058,10 @@ if (typeof DEBUG === 'undefined') { DEBUG = true; }
         cacheJson                : true,        // if true plugin get a json only first time and after plugin filter events
                                                 // if false plugin get a new json on each date change
         sortAscending            : true,        // false to sort descending
-        onInitialiseList         : false,       // Called when the event list is initialised
-        onAddedToList            : false,       // Called whenever an event is added to the list
+        onBeforeInitialiseList   : false,       // Called just before the events are added to the calendar
+        onAfterInitialiseList    : false,       // Called just after the events are added to the calendar
+        onEventAddedToList       : false,       // Called whenever an event has been added to the list
+        onBeforeAddingEvent      : false,       // Called whenever an event is being added to the calendar
         eventsLimit              : 4,
         dayNameFormat            : "ddd",
         textCalendarTitle        : "MMMM yyyy",
